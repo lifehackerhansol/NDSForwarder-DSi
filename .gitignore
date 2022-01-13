@@ -1,0 +1,5 @@
+*.nds
+*.elf
+*.dsi
+build
+!nitro/*

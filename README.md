@@ -1,8 +1,8 @@
-# Title Manager for HiyaCFW
-A basic title manager for DSi emunand.
+# NDSForwarder for hiyaCFW
+A basic nds-bootstrap forwarder generator for DSi SDNAND.
 
 ## Features
-- Install DSiWare and homebrew onto your emunand home menu.
+- Generate forwarders directly on the SD card.
 
 - Delete system titles and others hidden from Data Management.
 
@@ -13,7 +13,7 @@ A basic title manager for DSi emunand.
 ## Notes
 - Backup your SD card! Nothing bad should happen, but this is an early release so who knows.
 
-- This cannot be used to install cartridge games or older DS homebrew.
+- This will install *everything* as a forwarder, even DSiWare. If you want to install DSiWare natively, please use [Title Manager for hiyaCFW](https://github.com/JeffRulz/TMFH).
 
 - This is only for DSi systems. Not 3DS or DS.
 
@@ -23,3 +23,7 @@ A basic title manager for DSi emunand.
 [MakeTMD by Tuxality](https://github.com/Tuxality/maketmd)
 
 [GBATEK](https://problemkaputt.de/gbatek.htm)
+
+[Title Manager for hiyaCFW by JeffRulz](https://github.com/JeffRulz/TMFH)
+
+[NTR Forwarder by Rocket Robz](https://github.com/RocketRobz/NTR_Forwarder)
