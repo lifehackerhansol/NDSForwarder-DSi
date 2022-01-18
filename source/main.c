@@ -76,15 +76,24 @@ static int _mainMenu(int cursor)
 	return result;
 }
 
+bool isRetailDSi(void) {
+	if (REG_SCFG_EXT != 0) {
+		*(vu32*)(0x0DFFFE0C) = 0x53524C41;		// Check for 32MB of RAM
+		bool isDevConsole = (*(vu32*)(0x0DFFFE0C) == 0x53524C41);
+		if (!isDevConsole) return true;
+	}
+	return false;
+}
+
 int main(int argc, char **argv)
 {
 	srand(time(0));
 	_setupScreens();
 
 	//DSi check
-	if (!isDSiMode())
+	if (!isDSiMode() || !isRetailDSi())
 	{
-		messageBox("\x1B[31mError:\x1B[33m This app is only for DSi.");
+		messageBox("\x1B[31mError:\x1B[33m This app is only for retail DSi.");
 		return 0;
 	}
 
