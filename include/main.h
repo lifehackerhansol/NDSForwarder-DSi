@@ -6,7 +6,6 @@
 #include <stdio.h>
 
 void installMenu();
-void titleMenu();
 void testMenu();
 
 extern PrintConsole topScreen;

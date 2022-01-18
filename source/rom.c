@@ -212,15 +212,9 @@ void printRomInfo(char const* fpath)
 
 	if (!fpath) return;
 
-	tDSiHeader* h = getRomHeader(fpath);
-	tNDSBanner* b = getRomBanner(fpath);
+	tNDSHeader* h = getRomHeaderNDS(fpath);
+	tNDSBanner* b = getRomBannerNDS(fpath);
 
-	if (!isDsiHeader(h))
-	{
-		iprintf("Could not read dsi header.\n");
-	}
-	else
-	{
 		if (!b)
 		{
 			iprintf("Could not read banner.\n");
@@ -242,56 +236,13 @@ void printRomInfo(char const* fpath)
 				iprintf("\n");
 			}
 
-			iprintf("Label: %.12s\n", h->ndshdr.gameTitle);
-			iprintf("Game Code: %.4s\n", h->ndshdr.gameCode);
-
-			//system type
-			{
-				iprintf("Unit Code: ");
-
-				switch (h->ndshdr.unitCode)
-				{
-					case 0:  iprintf("NDS"); 	 break;
-					case 2:  iprintf("NDS+DSi"); break;
-					case 3:  iprintf("DSi"); 	 break;
-					default: iprintf("unknown");
-				}
-
-				iprintf("\n");
-			}
-
-			//application type
-			{
-				iprintf("Program Type: ");
-
-				switch (h->ndshdr.reserved1[7])
-				{
-					case 0x3: iprintf("Normal"); 	break;
-					case 0xB: iprintf("Sys"); 		break;
-					case 0xF: iprintf("Debug/Sys"); break;
-					default:  iprintf("unknown");
-				}
-
-				iprintf("\n");
-			}
-
-			//DSi title ids
-			{
-				if (h->tid_high == 0x00030004 ||
-					h->tid_high == 0x00030005 ||
-					h->tid_high == 0x00030015 ||
-					h->tid_high == 0x00030017 ||
-					h->tid_high == 0x00030000)
-				{
-					iprintf("Title ID: %08x %08x\n", (unsigned int)h->tid_high, (unsigned int)h->tid_low);			
-				}
-			}
+			iprintf("Label: %.12s\n", h->gameTitle);
+			iprintf("Game Code: %.4s\n", h->gameCode);
 
 			//print full file path
 			iprintf("\n%s\n", fpath);
 		}
-	}
-
+	
 	free(b);
 	free(h);
 }

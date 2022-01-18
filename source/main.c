@@ -11,7 +11,6 @@ PrintConsole bottomScreen;
 
 enum {
 	MAIN_MENU_INSTALL,
-	MAIN_MENU_TITLES,
 	MAIN_MENU_TEST,
 	MAIN_MENU_EXIT
 };
@@ -101,7 +100,7 @@ int main(int argc, char **argv)
 	{
 		if(!nitroFSInit("/NDSForwarder.dsi"))
 		{
-			messageBox("nitroFSInit() failed.");
+			messageBox("nitroFSInit()...\x1B[31mFailed\n\x1B[47m");
 			return 0;
 		}
 	}
@@ -118,10 +117,6 @@ int main(int argc, char **argv)
 		{
 			case MAIN_MENU_INSTALL:
 				installMenu();
-				break;
-
-			case MAIN_MENU_TITLES:
-				titleMenu();
 				break;
 
 			case MAIN_MENU_TEST:
