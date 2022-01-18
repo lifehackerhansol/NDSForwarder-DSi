@@ -105,13 +105,9 @@ int main(int argc, char **argv)
 	}
 
 	// setup NitroFS
-	if (!nitroFSInit(argv[0]))
-	{
-		if(!nitroFSInit("/NDSForwarder.dsi"))
-		{
-			messageBox("nitroFSInit()...\x1B[31mFailed\n\x1B[47m");
-			return 0;
-		}
+	if(!nitroFSInit(NULL) || !nitroFSInit(argv[0]) || !nitroFSInit("/NDSForwarder.dsi")) {
+		messageBox("nitroFSInit()...\x1B[31mFailed\n\x1B[47m");
+		return 0;
 	}
 
 	//main menu
