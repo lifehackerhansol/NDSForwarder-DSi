@@ -1,0 +1,32 @@
+name: Build nightly
+
+on:
+  push:
+    branches: ["*"]
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    branches: ["*"]
+    paths-ignore:
+      - 'README.md'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: devkitpro/devkitarm
+    name: Build with Docker using devkitARM
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Make NDSForwarder
+        run: |
+          make
+      - name: Prepare for build publishing
+        run: |
+          mkdir -p ~/artifacts
+          cp -f NDSForwarder.* ~/artifacts/
+      - name: Publish build to GH Actions
+        uses: actions/upload-artifact@v2
+        with:
+          path: ~/artifacts/*
+          name: build
