@@ -18,11 +18,7 @@ tDSiHeader* getRomHeader(char const* fpath)
 
 		if (h)
 		{
-			if (romIsCia(fpath))
-				fseek(f, 0x3900, SEEK_SET);
-			else
-				fseek(f, 0, SEEK_SET);
-
+			fseek(f, 0, SEEK_SET);
 			fread(h, sizeof(tDSiHeader), 1, f);
 		}
 
@@ -72,11 +68,7 @@ tNDSBanner* getRomBannerNDS(char const* fpath)
 
 			if (b)
 			{
-				if (romIsCia(fpath))
-					fseek(f, 0x3900, SEEK_SET);
-				else
-					fseek(f, 0, SEEK_SET);
-
+				fseek(f, 0, SEEK_SET);
 				fseek(f, h->bannerOffset, SEEK_CUR);
 				fread(b, sizeof(tNDSBanner), 1, f);
 			}
@@ -106,10 +98,7 @@ tNDSBanner* getRomBanner(char const* fpath)
 
 			if (b)
 			{
-				if (romIsCia(fpath))
-					fseek(f, 0x3900, SEEK_SET);
-				else
-					fseek(f, 0, SEEK_SET);
+				fseek(f, 0, SEEK_SET);
 
 				fseek(f, h->ndshdr.bannerOffset, SEEK_CUR);
 				fread(b, sizeof(tNDSBanner), 1, f);
@@ -157,51 +146,6 @@ bool getGameTitle(tNDSBanner* b, char* out, bool full)
 		}
 	}
 	out[128] = '\0';
-
-	return true;
-}
-
-bool getGameTitlePath(char const* fpath, char* out, bool full)
-{
-	if (!fpath) return false;
-	if (!out) return false;
-
-	tNDSBanner* b = getRomBanner(fpath);
-	bool result = getGameTitle(b, out, full);
-	
-	free(b);
-	return result;
-}
-
-bool getRomLabel(tDSiHeader* h, char* out)
-{
-	if (!h) return false;
-	if (!out) return false;
-
-	sprintf(out, "%.12s", h->ndshdr.gameTitle);
-
-	return true;
-}
-
-bool getRomCode(tDSiHeader* h, char* out)
-{
-	if (!h) return false;
-	if (!out) return false;
-
-	sprintf(out, "%.4s", h->ndshdr.gameCode);
-
-	return true;	
-}
-
-bool getTitleId(tDSiHeader* h, u32* low, u32* high)
-{
-	if (!h) return false;
-
-	if (low != NULL)
-		*low = h->tid_low;
-
-	if (high != NULL)
-		*high = h->tid_high;
 
 	return true;
 }
@@ -256,34 +200,11 @@ unsigned long long getRomSize(char const* fpath)
 
 	if (f)
 	{
-		//cia
-		if (romIsCia(fpath))
-		{
-			unsigned char bytes[4] = { 0 };
-			fseek(f, 0x38D0, SEEK_SET);
-			fread(bytes, 4, 1, f);
-			size = (bytes[0] << 24) | (bytes[1] << 16) | (bytes[2] << 8) | bytes[3];
-		}
-		else
-		{
-			fseek(f, 0, SEEK_END);
-			size = ftell(f);
-		}
+		fseek(f, 0, SEEK_END);
+		size = ftell(f);
 	}
 
 	fclose(f);
 	return size;
 }
 
-bool romIsCia(char const* fpath)
-{
-	if (!fpath) return false;
-	return (strstr(fpath, ".cia") != NULL || strstr(fpath, ".CIA") != NULL);
-}
-
-bool isDsiHeader(tDSiHeader* h)
-{
-	if (!h) return false;
-
-	return ( h->tid_low == (unsigned int)((h->ndshdr.gameCode[0] << 24) | (h->ndshdr.gameCode[1] << 16) | (h->ndshdr.gameCode[2] << 8) | h->ndshdr.gameCode[3]) );
-}

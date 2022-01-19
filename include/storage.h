@@ -23,7 +23,6 @@ bool padFile(char const* path, int size);
 
 //Directories
 bool dirExists(char const* path);
-bool copyDir(char const* src, char const* dst);
 bool deleteDir(char const* path);
 unsigned long long getDirSize(char const* path);
 
