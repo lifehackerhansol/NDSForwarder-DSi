@@ -189,11 +189,9 @@ static void generateList(Menu* m)
 				if (strstr(ent->d_name, ".nds") != NULL ||
 					strstr(ent->d_name, ".app") != NULL ||
 					strstr(ent->d_name, ".dsi") != NULL ||
-					strstr(ent->d_name, ".cia") != NULL ||
 					strstr(ent->d_name, ".NDS") != NULL ||
 					strstr(ent->d_name, ".APP") != NULL ||
-					strstr(ent->d_name, ".DSI") != NULL ||
-					strstr(ent->d_name, ".CIA") != NULL)
+					strstr(ent->d_name, ".DSI") != NULL)
 				{
 					if (count < m->page * ITEMS_PER_PAGE)
 						count += 1;

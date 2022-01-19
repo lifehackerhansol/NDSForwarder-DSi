@@ -20,7 +20,4 @@ void printRomInfo(char const* fpath);
 
 unsigned long long getRomSize(char const* fpath);
 
-bool romIsCia(char const* fpath);
-bool isDsiHeader(tDSiHeader* h);
-
 #endif

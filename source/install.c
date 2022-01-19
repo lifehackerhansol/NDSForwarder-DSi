@@ -146,140 +146,6 @@ static bool _openMenuSlot()
 	return true;
 }
 
-static void _createPublicSav(tDSiHeader* h, char* dataPath)
-{
-	if (!h) return;
-
-	if (h->public_sav_size > 0)
-	{
-		iprintf("Creating public.sav...");
-		swiWaitForVBlank();
-
-		if (!dataPath)
-		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
-		}
-		else
-		{
-			char* publicPath = (char*)malloc(strlen(dataPath) + strlen("/public.sav") + 1);
-			sprintf(publicPath, "%s/public.sav", dataPath);
-
-			FILE* f = fopen(publicPath, "wb");
-
-			if (!f)
-			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
-			}
-			else
-			{
-				fseek(f, h->public_sav_size-1, SEEK_SET);
-				fputc(0, f);
-				initFatHeader(f);
-
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
-			}
-
-			fclose(f);
-			free(publicPath);
-		}	
-	}
-}
-
-static void _createPrivateSav(tDSiHeader* h, char* dataPath)
-{
-	if (!h) return;
-
-	if (h->private_sav_size > 0)
-	{
-		iprintf("Creating private.sav...");
-		swiWaitForVBlank();
-
-		if (!dataPath)
-		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
-		}
-		else
-		{
-			char* privatePath = (char*)malloc(strlen(dataPath) + strlen("/private.sav") + 1);
-			sprintf(privatePath, "%s/private.sav", dataPath);
-
-			FILE* f = fopen(privatePath, "wb");
-
-			if (!f)
-			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
-			}
-			else
-			{
-				fseek(f, h->private_sav_size-1, SEEK_SET);
-				fputc(0, f);
-				initFatHeader(f);
-
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
-			}
-
-			fclose(f);
-			free(privatePath);
-		}	
-	}
-}
-
-static void _createBannerSav(tDSiHeader* h, char* dataPath)
-{
-	if (!h) return;
-
-	if (h->appflags & 0x4)
-	{
-		iprintf("Creating banner.sav...");
-		swiWaitForVBlank();
-
-		if (!dataPath)
-		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Failed\n");
-			iprintf("\x1B[47m");	//white
-		}
-		else
-		{
-			char* bannerPath = (char*)malloc(strlen(dataPath) + strlen("/banner.sav") + 1);
-			sprintf(bannerPath, "%s/banner.sav", dataPath);
-
-			FILE* f = fopen(bannerPath, "wb");
-
-			if (!f)
-			{
-				iprintf("\x1B[31m");	//red
-				iprintf("Failed\n");
-				iprintf("\x1B[47m");	//white
-			}
-			else
-			{
-				fseek(f, 0x4000 - 1, SEEK_SET);
-				fputc(0, f);
-
-				iprintf("\x1B[42m");	//green
-				iprintf("Done\n");
-				iprintf("\x1B[47m");	//white
-			}
-
-			fclose(f);
-			free(bannerPath);
-		}	
-	}
-}
-
 bool install(char* fpath, bool systemTitle)
 {
 	bool result = false;
@@ -479,10 +345,7 @@ bool install(char* fpath, bool systemTitle)
 				{
 					int result = 0;
 
-					if (!romIsCia(templatePath))
-						result = copyFile(templatePath, appPath);
-					else
-						result = copyFilePart(templatePath, 0x3900, fileSize, appPath);
+					result = copyFilePart(templatePath, 0x3900, fileSize, appPath);
 
 					if (result != 0)
 					{
@@ -570,18 +433,6 @@ bool install(char* fpath, bool systemTitle)
 				}
 			}
 		}
-
-		//data folder
-		{
-			char dataPath[64];
-			sprintf(dataPath, "%s/data", dirPath);
-
-			mkdir(dataPath, 0777);
-
-			_createPublicSav(h, dataPath);
-			_createPrivateSav(h, dataPath);		
-			_createBannerSav(h, dataPath);
-		}		
 
 		//end
 		result = true;
