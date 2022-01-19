@@ -129,7 +129,7 @@ static bool _openMenuSlot()
 	return true;
 }
 
-bool install(char* fpath, bool systemTitle)
+bool install(char* fpath)
 {
 	bool result = false;
 
@@ -244,17 +244,6 @@ bool install(char* fpath, bool systemTitle)
 			goto error;		
 
 		//system title patch
-		if (systemTitle)
-		{
-			iprintf("System Title Patch...");
-			swiWaitForVBlank();
-			h->tid_high = 0x00030015;
-			iprintf("\x1B[42m");	//green
-			iprintf("Done\n");
-			iprintf("\x1B[47m");	//white
-
-			fixHeader = true;
-		}
 
 		//skip nand check if system title
 		if (h->tid_high != 0x00030015)

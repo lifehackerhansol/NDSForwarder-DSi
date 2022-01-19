@@ -8,8 +8,6 @@
 
 enum {
 	INSTALL_MENU_INSTALL,
-	INSTALL_MENU_SYSTEM_TITLE,
-	INSTALL_MENU_DELETE,
 	INSTALL_MENU_BACK
 };
 
@@ -18,7 +16,6 @@ static char currentDir[512] = "";
 static void generateList(Menu* m);
 static void printItem(Menu* m);
 static int subMenu();
-static bool delete(Menu* m);
 
 static void _setHeader(Menu* m)
 {
@@ -96,22 +93,8 @@ void installMenu()
 						switch (subMenu())
 						{
 							case INSTALL_MENU_INSTALL:
-								install(m->items[m->cursor].value, false);
+								install(m->items[m->cursor].value);
 								break;
-								
-							case INSTALL_MENU_SYSTEM_TITLE:
-								install(m->items[m->cursor].value, true);
-								break;
-
-							case INSTALL_MENU_DELETE:
-							{
-								if (delete(m))
-								{
-									resetMenu(m);
-									generateList(m);
-								}
-							}
-							break;
 
 							case INSTALL_MENU_BACK:					
 								break;
@@ -246,7 +229,6 @@ static int subMenu()
 
 	addMenuItem(m, "Install", NULL, 0);
 	addMenuItem(m, "Install as System Title", NULL, 0);
-	addMenuItem(m, "Delete", NULL, 0);
 	addMenuItem(m, "Back - [B]", NULL, 0);
 
 	printMenu(m);
@@ -273,46 +255,5 @@ static int subMenu()
 	}
 
 	freeMenu(m);
-	return result;
-}
-
-static bool delete(Menu* m)
-{
-	if (!m) return false;
-	
-	char* fpath = m->items[m->cursor].value;
-
-	bool result = false;
-	bool choice = NO;
-	{
-		char str[] = "Are you sure you want to delete\n";
-		char* msg = (char*)malloc(strlen(str) + strlen(fpath) + 1);
-		sprintf(msg, "%s%s", str, fpath);
-
-		choice = choiceBox(msg);
-
-		free(msg);
-	}
-
-	if (choice == YES)
-	{
-		if (!fpath)
-		{
-			messageBox("\x1B[31mCould not delete file.\x1B[47m");
-		}
-		else
-		{
-			if (remove(fpath) == 0)
-			{
-				result = true;
-				messageBox("\x1B[42mFile deleted.\x1B[47m");
-			}
-			else
-			{
-				messageBox("\x1B[31mCould not delete file.\x1B[47m");
-			}
-		}		
-	}
-
 	return result;
 }

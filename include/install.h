@@ -3,6 +3,6 @@
 
 #include <nds/ndstypes.h>
 
-bool install(char* fpath, bool systemTitle);
+bool install(char* fpath);
 
 #endif

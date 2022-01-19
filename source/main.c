@@ -4,7 +4,7 @@
 #include "nitrofs.h"
 #include <time.h>
 
-#define VERSION "0.1.0"
+#define VERSION "0.1.1"
 
 PrintConsole topScreen;
 PrintConsole bottomScreen;
@@ -49,7 +49,6 @@ static int _mainMenu(int cursor)
 	setMenuHeader(m, "MAIN MENU");
 
 	addMenuItem(m, "Install", NULL, 0);
-	addMenuItem(m, "Titles", NULL, 0);
 	addMenuItem(m, "Test", NULL, 0);
 	addMenuItem(m, "Shut Down", NULL, 0);
 
