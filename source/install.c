@@ -314,9 +314,7 @@ bool install(char* fpath)
 
 				//copy nds file to app
 				{
-					int result = 0;
-
-					result = copyFilePart(templatePath, 0x3900, fileSize, appPath);
+					int result = copyFile(templatePath, appPath);
 
 					if (result != 0)
 					{
