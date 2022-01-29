@@ -129,28 +129,8 @@ static bool _openMenuSlot()
 	return true;
 }
 
-bool install(char* fpath)
+static bool _generateForwarder(char* fpath, char* templatePath)
 {
-	bool result = false;
-
-	//confirmation message
-	{
-		char str[] = "Are you sure you want to install\n";
-		char* msg = (char*)malloc(strlen(str) + strlen(fpath) + 8);
-		sprintf(msg, "%s%s\n", str, fpath);
-		
-		bool choice = choiceBox(msg);
-		free(msg);
-		
-		if (choice == NO)
-			return false;
-	}
-
-	//start installation
-	clearScreen(&bottomScreen);
-	iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
-
-	char* templatePath = "sd:/_nds/template.dsi";
 	// extract template
 	mkdir("/_nds", 0777);
 	remove(templatePath);
@@ -197,16 +177,50 @@ bool install(char* fpath)
 	free(targetheader);
 	free(targetbanner);
 	free(templateheader);
+	return true;
+}
+
+bool installError(char* error)
+{
+	iprintf("\x1B[31m");	//red
+	iprintf("Error: ");
+	iprintf("\x1B[33m");	//yellow
+	iprintf("%s", error);
+	iprintf("\x1B[47m");	//white
+	
+	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
+	return false;
+}
+
+bool install(char* fpath)
+{
+	char* templatePath = "sd:/_nds/template.dsi";
+
+	//confirmation message
+	{
+		char str[] = "Are you sure you want to install\n";
+		char* msg = (char*)malloc(strlen(str) + strlen(fpath) + 8);
+		sprintf(msg, "%s%s\n", str, fpath);
+		
+		bool choice = choiceBox(msg);
+		free(msg);
+		
+		if (choice == NO)
+			return false;
+	}
+
+	//start installation
+	clearScreen(&bottomScreen);
+	iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
+
+	if (!_generateForwarder(fpath, templatePath)) {
+		return installError("Failed to generate forwarder.\n");
+	}
 
 	tDSiHeader* h = getRomHeader(templatePath);	
 	if (!h)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("Error: ");
-		iprintf("\x1B[33m");	//yellow
-		iprintf("Could not open file.\n");
-		iprintf("\x1B[47m");	//white
-		goto error;
+		return installError("Could not open file.\n");
 	}
 	else
 	{
@@ -221,15 +235,7 @@ bool install(char* fpath)
 			h->tid_high == 0x00030015 ||
 			h->tid_high == 0x00030017)
 		{}
-		else
-		{
-			iprintf("\x1B[31m");	//red
-			iprintf("Error: ");
-			iprintf("\x1B[33m");	//yellow
-			iprintf("This is not a DSi rom.\n");
-			iprintf("\x1B[47m");	//white
-			goto error;
-		}
+		else return installError("This is not a DSi ROM.\n");
 
 		//get install size
 		iprintf("Install Size: ");
@@ -240,8 +246,7 @@ bool install(char* fpath)
 		printBytes(fileSize);
 		iprintf("\n");
 
-		if (!_checkSdSpace(fileSize))
-			goto error;		
+		if (!_checkSdSpace(fileSize)) return installError("Not enough space on SD.\n");
 
 		//system title patch
 
@@ -257,19 +262,18 @@ bool install(char* fpath)
 				}				
 				else
 				{
-					if (choicePrint("Try installing anyway?") == NO)
-						goto error;
+					if (choicePrint("Try installing anyway?") == NO) return installError("User cancelled install.\n");
 				}
 			}
 		}
-		
+
 		if (_iqueHack(h))
 			fixHeader = true;
 
 		//create title directory /title/XXXXXXXX/XXXXXXXX
 		char dirPath[32];
 		mkdir("/title", 0777);
-		
+
 		sprintf(dirPath, "/title/%08x", (unsigned int)h->tid_high);
 		mkdir(dirPath, 0777);
 
@@ -281,8 +285,7 @@ bool install(char* fpath)
 			char msg[64];
 			sprintf(msg, "Title %08x is already used.\nInstall anyway?", (unsigned int)h->tid_low);
 
-			if (choicePrint(msg) == NO)
-				goto error;
+			if (choicePrint(msg) == NO) return installError("User cancelled install.\n");
 
 			else
 			{
@@ -293,7 +296,7 @@ bool install(char* fpath)
 		}
 
 		if (!_openMenuSlot())
-			goto error;
+			return installError("Not enough icon slots available.\n");
 
 		mkdir(dirPath, 0777);
 
@@ -318,14 +321,9 @@ bool install(char* fpath)
 
 					if (result != 0)
 					{
-						iprintf("\x1B[31m");	//red
-						iprintf("Failed\n");
-						iprintf("\x1B[33m");	//yellow
-						iprintf("%s\n", appPath);
-						iprintf("%s\n", strerror(errno));
-						iprintf("\x1B[47m");	//white
-
-						goto error;
+						char* err;
+						sprintf(err, "%s\n%s\n", appPath, strerror(errno));
+						return installError(err);
 					}
 
 					iprintf("\x1B[42m");	//green
@@ -398,26 +396,18 @@ bool install(char* fpath)
 					sprintf(tmdPath, "%s/title.tmd", contentPath);
 
 					if (maketmd(appPath, tmdPath) != 0)				
-						goto error;
+						return installError("Failed to generate TMD.\n");
 				}
 			}
 		}
 
 		//end
-		result = true;
 		iprintf("\x1B[42m");	//green
 		iprintf("\nInstallation complete.\n");
 		iprintf("\x1B[47m");	//white
 		iprintf("Back - [B]\n");
 		keyWait(KEY_A | KEY_B);
-
-		goto complete;
-	}	
-
-error:
-	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
-
-complete:
+	}
 	free(h);
-	return result;
+	return true;
 }
