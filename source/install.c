@@ -91,25 +91,6 @@ static bool _checkSdSpace(unsigned long long size)
 	return true;
 }
 
-static bool _checkDsiSpace(unsigned long long size)
-{
-	iprintf("Enough room on DSi?...");
-	swiWaitForVBlank();
-
-	if (getDsiFree() < size)
-	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
-		return false;
-	}
-
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
-	return true;
-}
-
 static bool _openMenuSlot()
 {
 	iprintf("Open DSi menu slot?...");
@@ -163,22 +144,30 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 		bool choice = choicePrint("This is a DSiWare title!\nYou can install directly using\nTMFH instead, for full \ncompatibility.\nInstall anyway?");
 		if(!choice) {
 			free(targetDSiWareCheck);
-
 			return false;
 		}
 	}
 
 	free(targetDSiWareCheck);
+
+	bool animatedicon = false;
 	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
 	tNDSBanner* targetbanner = getRomBannerNDS(fpath);
 	tDSiHeader* templateheader = getRomHeader(templatePath);
+	sNDSBannerExt* targetbannerdsi = NULL;
+
+	if(targetbanner->version == NDS_BANNER_VER_DSi) {
+		animatedicon = true;
+		targetbannerdsi = getRomBannerDSi(fpath);
+	}
 
 	fseek(template, 0, SEEK_SET);
 	fwrite(targetheader, 1, 18, template);
 	fflush(template);
 	
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
-	fwrite(targetbanner, sizeof(tNDSBanner), 1, template);
+	if(!animatedicon) fwrite(targetbanner, sizeof(tNDSBanner), 1, template);
+	else fwrite(targetbannerdsi, NDS_BANNER_SIZE_DSi, 1, template);
 	fflush(template);
 
 	fseek(template, gamepath_location, SEEK_SET);
@@ -203,6 +192,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	// no leeks
 	free(targetheader);
 	free(targetbanner);
+	free(targetbannerdsi);
 	free(templateheader);
 	return true;
 }
@@ -264,23 +254,6 @@ bool install(char* fpath)
 		if (!_checkSdSpace(fileSize)) return installError("Not enough space on SD.\n");
 
 		//system title patch
-
-		//skip nand check if system title
-		if (h->tid_high != 0x00030015)
-		{
-			if (!_checkDsiSpace(fileSize))
-			{
-				if (choicePrint("Install as system title?"))
-				{
-					h->tid_high = 0x00030015;
-					fixHeader = true;
-				}				
-				else
-				{
-					if (choicePrint("Try installing anyway?") == NO) return installError("User cancelled install.\n");
-				}
-			}
-		}
 
 		if (_iqueHack(h))
 			fixHeader = true;

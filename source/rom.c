@@ -81,6 +81,36 @@ tNDSBanner* getRomBannerNDS(char const* fpath)
 	return b;
 }
 
+sNDSBannerExt* getRomBannerDSi(char const* fpath)
+{
+	if (!fpath) return NULL;
+
+	tNDSHeader* h = getRomHeaderNDS(fpath);
+	sNDSBannerExt* b = NULL;
+
+	if (h)
+	{
+		FILE* f = fopen(fpath, "rb");
+
+		if (f)
+		{
+			b = (sNDSBannerExt*)malloc(sizeof(sNDSBannerExt));
+
+			if (b)
+			{
+				fseek(f, 0, SEEK_SET);
+				fseek(f, h->bannerOffset, SEEK_CUR);
+				fread(b, sizeof(sNDSBannerExt), 1, f);
+			}
+		}
+
+		free(h);
+		fclose(f);		
+	}
+
+	return b;
+}
+
 tNDSBanner* getRomBanner(char const* fpath)
 {
 	if (!fpath) return NULL;
