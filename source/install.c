@@ -129,6 +129,18 @@ static bool _openMenuSlot()
 	return true;
 }
 
+bool installError(char* error)
+{
+	iprintf("\x1B[31m");	//red
+	iprintf("Error: ");
+	iprintf("\x1B[33m");	//yellow
+	iprintf("%s", error);
+	iprintf("\x1B[47m");	//white
+	
+	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
+	return false;
+}
+
 static bool _generateForwarder(char* fpath, char* templatePath)
 {
 	// extract template
@@ -142,6 +154,21 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	u32 gamepath_location = 0x229BC;
 	u8 gamepath_length = 252;
 
+	// DSiWare check
+	tDSiHeader* targetDSiWareCheck = getRomHeader(fpath);
+	//title id must be one of these
+	if (targetDSiWareCheck->tid_high == 0x00030004 || targetDSiWareCheck->tid_high == 0x00030005 ||
+		targetDSiWareCheck->tid_high == 0x00030015 || targetDSiWareCheck->tid_high == 0x00030017)
+	{
+		bool choice = choicePrint("This is a DSiWare title!\nYou can install directly using\nTMFH instead, for full \ncompatibility.\nInstall anyway?");
+		if(!choice) {
+			free(targetDSiWareCheck);
+
+			return false;
+		}
+	}
+
+	free(targetDSiWareCheck);
 	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
 	tNDSBanner* targetbanner = getRomBannerNDS(fpath);
 	tDSiHeader* templateheader = getRomHeader(templatePath);
@@ -178,18 +205,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	free(targetbanner);
 	free(templateheader);
 	return true;
-}
-
-bool installError(char* error)
-{
-	iprintf("\x1B[31m");	//red
-	iprintf("Error: ");
-	iprintf("\x1B[33m");	//yellow
-	iprintf("%s", error);
-	iprintf("\x1B[47m");	//white
-	
-	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
-	return false;
 }
 
 bool install(char* fpath)
