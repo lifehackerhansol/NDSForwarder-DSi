@@ -4,7 +4,7 @@
 #include "nitrofs.h"
 #include <time.h>
 
-#define VERSION "0.1.1"
+#define VERSION "0.1.3"
 
 PrintConsole topScreen;
 PrintConsole bottomScreen;

@@ -4,6 +4,8 @@
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 
+// sNDSBannerExt from TWiLight Menu++
+// https://github.com/DS-Homebrew/TWiLightMenu/blob/587a3ab0bd74d5f74f6eb1dd34ad9673b18c4606/romsel_dsimenutheme/arm9/source/ndsheaderbanner.h
 typedef struct {
 	u16 version;		//!< version of the banner.
 	u16 crc[4];		//!< CRC-16s of the banner.
