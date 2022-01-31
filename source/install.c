@@ -169,14 +169,13 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 		case NDS_BANNER_VER_ZH:
 			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
 		default:
-			targetbanner->version |= NDS_BANNER_VER_ZH_KO;
+			targetbanner->version = NDS_BANNER_VER_ZH_KO;
 			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
 			fwrite(targetbanner, NDS_BANNER_SIZE_ZH_KO, 1, template);
 			break;
 	}
-	fwrite(targetbanner, sizeof(sNDSBannerExt), 1, template);
 	fflush(template);
 
 	fseek(template, gamepath_location, SEEK_SET);
