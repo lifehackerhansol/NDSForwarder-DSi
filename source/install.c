@@ -150,7 +150,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 	free(targetDSiWareCheck);
 
-	bool animatedicon = false;
 	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
 	sNDSBannerExt* targetbanner = getRomBannerNDS(fpath);
 	tDSiHeader* templateheader = getRomHeader(templatePath);
@@ -162,7 +161,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
 	switch(targetbanner->version) {
 		case NDS_BANNER_VER_DSi:
-			fwrite(targetbanner, NDS_BANNER_SIZE_DSi, 1, template);
 			break;
 		case NDS_BANNER_VER_ORIGINAL:
 			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
@@ -173,10 +171,16 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
-			fwrite(targetbanner, NDS_BANNER_SIZE_ZH_KO, 1, template);
+			targetbanner->crc[3] = 0x0000;
+			memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
+			memset(targetbanner->dsi_icon, 0xFF, sizeof(targetbanner->dsi_icon));
+			memset(targetbanner->dsi_palette, 0xFF, sizeof(targetbanner->dsi_palette));
+			memset(targetbanner->dsi_seq, 0xFF, sizeof(targetbanner->dsi_seq));
 			break;
 	}
+	fwrite(targetbanner, sizeof(sNDSBannerExt), 1, template);
 	fflush(template);
+	free(targetbanner);
 
 	fseek(template, gamepath_location, SEEK_SET);
 	fwrite(fpath, sizeof(char), gamepath_length, template);
@@ -200,7 +204,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 	// no leeks
 	free(targetheader);
-	free(targetbanner);
 	free(templateheader);
 	return true;
 }
