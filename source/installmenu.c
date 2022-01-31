@@ -228,7 +228,6 @@ static int subMenu()
 	Menu* m = newMenu();
 
 	addMenuItem(m, "Install", NULL, 0);
-	addMenuItem(m, "Install as System Title", NULL, 0);
 	addMenuItem(m, "Back - [B]", NULL, 0);
 
 	printMenu(m);
