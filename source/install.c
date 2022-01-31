@@ -152,22 +152,31 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 	bool animatedicon = false;
 	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
-	tNDSBanner* targetbanner = getRomBannerNDS(fpath);
+	sNDSBannerExt* targetbanner = getRomBannerNDS(fpath);
 	tDSiHeader* templateheader = getRomHeader(templatePath);
-	sNDSBannerExt* targetbannerdsi = NULL;
-
-	if(targetbanner->version == NDS_BANNER_VER_DSi) {
-		animatedicon = true;
-		targetbannerdsi = getRomBannerDSi(fpath);
-	}
 
 	fseek(template, 0, SEEK_SET);
 	fwrite(targetheader, 1, 18, template);
 	fflush(template);
 	
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
-	if(!animatedicon) fwrite(targetbanner, sizeof(tNDSBanner), 1, template);
-	else fwrite(targetbannerdsi, NDS_BANNER_SIZE_DSi, 1, template);
+	switch(targetbanner->version) {
+		case NDS_BANNER_VER_DSi:
+			fwrite(targetbanner, NDS_BANNER_SIZE_DSi, 1, template);
+			break;
+		case NDS_BANNER_VER_ORIGINAL:
+			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
+		case NDS_BANNER_VER_ZH:
+			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
+		default:
+			targetbanner->version |= NDS_BANNER_VER_ZH_KO;
+			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
+			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
+			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
+			fwrite(targetbanner, NDS_BANNER_SIZE_ZH_KO, 1, template);
+			break;
+	}
+	fwrite(targetbanner, sizeof(sNDSBannerExt), 1, template);
 	fflush(template);
 
 	fseek(template, gamepath_location, SEEK_SET);
@@ -186,13 +195,13 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	fseek(template, offsetof(tNDSHeader, headerCRC16), SEEK_SET);
 	fwrite(&templatecrc, sizeof(templatecrc), 1, template);
 
+	// need to reload banner to calc crc16
 	fclose(template);
 	iprintf("Forwarder created.\n\n");
 
 	// no leeks
 	free(targetheader);
 	free(targetbanner);
-	free(targetbannerdsi);
 	free(templateheader);
 	return true;
 }

@@ -4,6 +4,8 @@
 #include <nds/ndstypes.h>
 #include <nds/memory.h>
 
+#define TEMPLATE_END 0x325FF
+
 // sNDSBannerExt from TWiLight Menu++
 // https://github.com/DS-Homebrew/TWiLightMenu/blob/587a3ab0bd74d5f74f6eb1dd34ad9673b18c4606/romsel_dsimenutheme/arm9/source/ndsheaderbanner.h
 typedef struct {
@@ -23,16 +25,28 @@ typedef struct {
 	u16 dsi_seq[64];	//!< DSi animated icon sequence.
 } sNDSBannerExt;
 
-#define NDS_BANNER_VER_DSi 0x0103
-#define NDS_BANNER_SIZE_DSi 0x23C0
+// sNDSBanner version.
+typedef enum {
+	NDS_BANNER_VER_ORIGINAL	= 0x0001,
+	NDS_BANNER_VER_ZH		= 0x0002,
+	NDS_BANNER_VER_ZH_KO	= 0x0003,
+	NDS_BANNER_VER_DSi		= 0x0103,
+} sNDSBannerVersion;
+
+// sNDSBanner sizes.
+typedef enum {
+	NDS_BANNER_SIZE_ORIGINAL	= 0x0840,
+	NDS_BANNER_SIZE_ZH			= 0x0940,
+	NDS_BANNER_SIZE_ZH_KO		= 0x0A40,
+	NDS_BANNER_SIZE_DSi			= 0x23C0,
+} sNDSBannerSize;
 
 tDSiHeader* getRomHeader(char const* fpath);
 tNDSHeader* getRomHeaderNDS(char const* fpath);
 tNDSBanner* getRomBanner(char const* fpath);
-tNDSBanner* getRomBannerNDS(char const* fpath);
-sNDSBannerExt* getRomBannerDSi(char const* fpath);
+sNDSBannerExt* getRomBannerNDS(char const* fpath);
 
-bool getGameTitle(tNDSBanner* b, char* out, bool full);
+bool getGameTitle(sNDSBannerExt* b, char* out, bool full);
 
 void printRomInfo(char const* fpath);
 

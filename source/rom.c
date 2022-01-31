@@ -51,37 +51,7 @@ tNDSHeader* getRomHeaderNDS(char const* fpath)
 	return h;
 }
 
-tNDSBanner* getRomBannerNDS(char const* fpath)
-{
-	if (!fpath) return NULL;
-
-	tNDSHeader* h = getRomHeaderNDS(fpath);
-	tNDSBanner* b = NULL;
-
-	if (h)
-	{
-		FILE* f = fopen(fpath, "rb");
-
-		if (f)
-		{
-			b = (tNDSBanner*)malloc(sizeof(tNDSBanner));
-
-			if (b)
-			{
-				fseek(f, 0, SEEK_SET);
-				fseek(f, h->bannerOffset, SEEK_CUR);
-				fread(b, sizeof(tNDSBanner), 1, f);
-			}
-		}
-
-		free(h);
-		fclose(f);		
-	}
-
-	return b;
-}
-
-sNDSBannerExt* getRomBannerDSi(char const* fpath)
+sNDSBannerExt* getRomBannerNDS(char const* fpath)
 {
 	if (!fpath) return NULL;
 
@@ -142,7 +112,7 @@ tNDSBanner* getRomBanner(char const* fpath)
 	return b;
 }
 
-bool getGameTitle(tNDSBanner* b, char* out, bool full)
+bool getGameTitle(sNDSBannerExt* b, char* out, bool full)
 {
 	if (!b) return false;
 	if (!out) return false;
@@ -187,7 +157,7 @@ void printRomInfo(char const* fpath)
 	if (!fpath) return;
 
 	tNDSHeader* h = getRomHeaderNDS(fpath);
-	tNDSBanner* b = getRomBannerNDS(fpath);
+	sNDSBannerExt* b = getRomBannerNDS(fpath);
 
 		if (!b)
 		{
