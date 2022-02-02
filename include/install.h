@@ -3,6 +3,6 @@
 
 #include <nds/ndstypes.h>
 
-bool install(char* fpath);
+bool install(char* fpath, bool randomize);
 
 #endif

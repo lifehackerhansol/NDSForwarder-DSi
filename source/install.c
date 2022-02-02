@@ -18,39 +18,34 @@ static bool _titleIsUsed(tDSiHeader* h)
 	return dirExists(path);
 }
 
-//patch homebrew roms if gameCode is #### or null
+// randomize TID
 static bool _patchGameCode(tDSiHeader* h)
 {
 	if (!h) return false;
 
-	if ((strcmp(h->ndshdr.gameCode, "####") == 0 && h->tid_low == 0x23232323) || (!*h->ndshdr.gameCode && h->tid_low == 0))
-	{
-		iprintf("Fixing Game Code...");
-		swiWaitForVBlank();
+	iprintf("Fixing Game Code...");
+	swiWaitForVBlank();
 
-		//set as standard app
-		h->tid_high = 0x00030004;
+	//set as standard app
+	h->tid_high = 0x00030004;
 		
+	do {
 		do {
-			do {
-				//generate a random game code
-				for (int i = 0; i < 4; i++)
-					h->ndshdr.gameCode[i] = 'A' + (rand() % 26);
-			}
-			while (h->ndshdr.gameCode[0] == 'A'); //first letter shouldn't be A
-		
-			//correct title id
-			h->tid_low = ( (h->ndshdr.gameCode[0] << 24) | (h->ndshdr.gameCode[1] << 16) | (h->ndshdr.gameCode[2] << 8) | h->ndshdr.gameCode[3] );
+			//generate a random game code
+			for (int i = 0; i < 4; i++)
+				h->ndshdr.gameCode[i] = 'A' + (rand() % 26);
 		}
-		while (_titleIsUsed(h));
+		while (h->ndshdr.gameCode[0] == 'A'); //first letter shouldn't be A
 
-		iprintf("\x1B[42m");	//green
-		iprintf("Done\n");
-		iprintf("\x1B[47m");	//white
-		return true;
+		//correct title id
+		h->tid_low = ( (h->ndshdr.gameCode[0] << 24) | (h->ndshdr.gameCode[1] << 16) | (h->ndshdr.gameCode[2] << 8) | h->ndshdr.gameCode[3] );
 	}
+	while (_titleIsUsed(h));
 
-	return false;
+	iprintf("\x1B[42m");	//green
+	iprintf("Done\n");
+	iprintf("\x1B[47m");	//white
+	return true;
 }
 
 static bool _iqueHack(tDSiHeader* h)
@@ -160,22 +155,25 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
 	switch(targetbanner->version) {
-		case NDS_BANNER_VER_DSi:
-			break;
 		case NDS_BANNER_VER_ORIGINAL:
 			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
 		case NDS_BANNER_VER_ZH:
 			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
+		case NDS_BANNER_VER_DSi:
+			u16 crccheck = swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180);
+			if(!(targetbanner->version == NDS_BANNER_VER_DSi) || !(crccheck == targetbanner->crc[3])) {
+				memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
+				memset(targetbanner->dsi_icon, 0xFF, sizeof(targetbanner->dsi_icon));
+				memset(targetbanner->dsi_palette, 0xFF, sizeof(targetbanner->dsi_palette));
+				memset(targetbanner->dsi_seq, 0xFF, sizeof(targetbanner->dsi_seq));
+				memset(targetbanner->reserved3, 0xFF, sizeof(targetbanner->reserved3));
+				targetbanner->crc[3] = 0x0000;
+				targetbanner->version = NDS_BANNER_VER_ZH_KO;
+			} else targetbanner->crc[3] = crccheck;
 		default:
-			targetbanner->version = NDS_BANNER_VER_ZH_KO;
 			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
-			targetbanner->crc[3] = 0x0000;
-			memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
-			memset(targetbanner->dsi_icon, 0xFF, sizeof(targetbanner->dsi_icon));
-			memset(targetbanner->dsi_palette, 0xFF, sizeof(targetbanner->dsi_palette));
-			memset(targetbanner->dsi_seq, 0xFF, sizeof(targetbanner->dsi_seq));
 			break;
 	}
 	fwrite(targetbanner, sizeof(sNDSBannerExt), 1, template);
@@ -208,7 +206,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	return true;
 }
 
-bool install(char* fpath)
+bool install(char* fpath, bool randomize)
 {
 	char* templatePath = "sd:/_nds/template.dsi";
 
@@ -242,16 +240,17 @@ bool install(char* fpath)
 	{
 		bool fixHeader = false;
 
-		if (_patchGameCode(h))
-			fixHeader = true;
+		if (randomize || (strcmp(h->ndshdr.gameCode, "####") == 0 && h->tid_low == 0x23232323) || (!*h->ndshdr.gameCode && h->tid_low == 0)) {
+			if (_patchGameCode(h)) fixHeader = true;
+			else return installError("Failed to randomize TID.\n");
+		}
 
 		//title id must be one of these
-		if (h->tid_high == 0x00030004 ||
-			h->tid_high == 0x00030005 ||
-			h->tid_high == 0x00030015 ||
-			h->tid_high == 0x00030017)
-		{}
-		else return installError("This is not a DSi ROM.\n");
+		if (!(h->tid_high == 0x00030004 ||
+			  h->tid_high == 0x00030005 ||
+			  h->tid_high == 0x00030015 ||
+			  h->tid_high == 0x00030017))
+			return installError("This is not a DSi ROM.\n");
 
 		//get install size
 		iprintf("Install Size: ");

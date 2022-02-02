@@ -21,6 +21,7 @@ typedef struct {
 	u8 dsi_icon[8][512];	//!< DSi animated icon frame data.
 	u16 dsi_palette[8][16];	//!< Palette for each DSi icon frame.
 	u16 dsi_seq[64];	//!< DSi animated icon sequence.
+	u8 reserved3[64];
 } sNDSBannerExt;
 
 // sNDSBanner version.

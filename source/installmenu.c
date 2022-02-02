@@ -8,6 +8,7 @@
 
 enum {
 	INSTALL_MENU_INSTALL,
+	INSTALL_MENU_RANDOMIZE,
 	INSTALL_MENU_BACK
 };
 
@@ -93,7 +94,11 @@ void installMenu()
 						switch (subMenu())
 						{
 							case INSTALL_MENU_INSTALL:
-								install(m->items[m->cursor].value);
+								install(m->items[m->cursor].value, false);
+								break;
+
+							case INSTALL_MENU_RANDOMIZE:
+								install(m->items[m->cursor].value, true);
 								break;
 
 							case INSTALL_MENU_BACK:					
@@ -230,6 +235,7 @@ static int subMenu()
 	Menu* m = newMenu();
 
 	addMenuItem(m, "Install", NULL, 0);
+	addMenuItem(m, "Randomize TID and install", NULL, 0);
 	addMenuItem(m, "Back - [B]", NULL, 0);
 
 	printMenu(m);
