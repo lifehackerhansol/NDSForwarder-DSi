@@ -159,7 +159,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
 		case NDS_BANNER_VER_ZH:
 			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
-		case NDS_BANNER_VER_DSi:
+		default:
 			u16 crccheck = swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180);
 			if(!(targetbanner->version == NDS_BANNER_VER_DSi) || !(crccheck == targetbanner->crc[3])) {
 				memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
@@ -170,7 +170,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 				targetbanner->crc[3] = 0x0000;
 				targetbanner->version = NDS_BANNER_VER_ZH_KO;
 			} else targetbanner->crc[3] = crccheck;
-		default:
 			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
@@ -319,7 +318,7 @@ bool install(char* fpath, bool randomize)
 
 					if (result != 0)
 					{
-						char* err;
+						char err[128];
 						sprintf(err, "%s\n%s\n", appPath, strerror(errno));
 						return installError(err);
 					}
