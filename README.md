@@ -2,10 +2,11 @@
 A basic nds-bootstrap forwarder generator for DSi SDNAND.
 
 ## Features
-- Generate forwarders directly on the SD card.
-- Delete system titles and others hidden from Data Management.
-- Backup and restore installed titles.
+- Generate forwarders directly on the SD card (games, old NDS homebrew, etc)
 - View basic title header info.
+
+## Usage
+- https://wiki.ds-homebrew.com/ds-index/forwarders.html?tab=tab-dsi-sd-card
 
 ## Notes
 - Backup your SD card! Nothing bad should happen, but this is an early release so who knows.
