@@ -8,6 +8,10 @@
 #include <errno.h>
 #include <sys/stat.h>
 
+// hardcode the only two constants. This may be changed one day, will just release a new one at that point anyway
+#define gamepath_location 0x1D6A4
+#define gamepath_length 252
+
 static bool _titleIsUsed(tDSiHeader* h)
 {
 	if (!h) return false;
@@ -125,10 +129,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	copyFile("nitro:/sdcard.nds", templatePath);
 	iprintf("Template copied to SD.\n");
 	FILE* template = fopen("sd:/_nds/template.dsi", "rb+");
-
-	// hardcode the only two constants. This may be changed one day, will just release a new one at that point anyway
-	u32 gamepath_location = 0x229BC;
-	u8 gamepath_length = 252;
 
 	// DSiWare check
 	tDSiHeader* targetDSiWareCheck = getRomHeader(fpath);
@@ -406,5 +406,6 @@ bool install(char* fpath, bool randomize)
 		keyWait(KEY_A | KEY_B);
 	}
 	free(h);
+	remove(templatePath);
 	return true;
 }
