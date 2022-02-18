@@ -28,7 +28,7 @@
 #include "message.h"
 #include "nitrofs.h"
 
-#define VERSION "0.2.1"
+#define VERSION "0.2.2"
 
 PrintConsole topScreen;
 PrintConsole bottomScreen;
