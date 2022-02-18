@@ -173,14 +173,44 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	fflush(template);
 	
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
+
+	// sanity check CRC.
+	// Only check up to ZH_KO. DSi is checked separately, and can be fixed by nulling the DSi data, but the rest needs to be intact.
+	bool crccheck = true;
+	switch(targetbanner->version) {
+		case NDS_BANNER_VER_ORIGINAL:
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x820) != targetbanner->crc[0]) {
+				crccheck = false;
+				break;
+			}
+		case NDS_BANNER_VER_ZH:
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x920) != targetbanner->crc[1]) {
+				crccheck = false;
+				break;
+			}
+		case NDS_BANNER_VER_ZH_KO:
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0xA20) != targetbanner->crc[2]) {
+				crccheck = false;
+				break;
+			}
+	}
+	if (!crccheck) {
+		free(targetbanner);
+		free(targetheader);
+		free(templateheader);
+		fclose(template);
+		return installError("CRC check failed. This ROM may be corrupt.\n");
+	}
+
 	switch(targetbanner->version) {
 		case NDS_BANNER_VER_ORIGINAL:
 			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
+			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 		case NDS_BANNER_VER_ZH:
 			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
+			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 		default:
-			u16 crccheck = swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180);
-			if(!(targetbanner->version == NDS_BANNER_VER_DSi) || !(crccheck == targetbanner->crc[3])) {
+			if(!(targetbanner->version == NDS_BANNER_VER_DSi) || !(swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180) == targetbanner->crc[3])) {
 				memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
 				memset(targetbanner->dsi_icon, 0xFF, sizeof(targetbanner->dsi_icon));
 				memset(targetbanner->dsi_palette, 0xFF, sizeof(targetbanner->dsi_palette));
@@ -189,8 +219,6 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 				targetbanner->crc[3] = 0x0000;
 				targetbanner->version = NDS_BANNER_VER_ZH_KO;
 			} else targetbanner->crc[3] = crccheck;
-			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
-			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
 			break;
 	}
