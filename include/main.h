@@ -20,10 +20,6 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-#include <nds.h>
-#include <fat.h>
-#include <stdio.h>
-
 void installMenu();
 void testMenu();
 

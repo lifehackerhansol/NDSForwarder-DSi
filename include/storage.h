@@ -21,7 +21,6 @@
 #define STORAGE_H
 
 #include <nds/ndstypes.h>
-#include <stdio.h>
 
 #define BYTES_PER_BLOCK (1024*128)
 

@@ -17,12 +17,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+#include <malloc.h>
+
+#include <nds.h>
+
 #include "rom.h"
 #include "main.h"
 #include "storage.h"
-#include <nds.h>
-#include <malloc.h>
-#include <stdio.h>
 
 tDSiHeader* getRomHeader(char const* fpath)
 {
@@ -70,7 +72,7 @@ tNDSHeader* getRomHeaderNDS(char const* fpath)
 	return h;
 }
 
-sNDSBannerExt* getRomBannerNDS(char const* fpath)
+sNDSBannerExt* getRomBanner(char const* fpath)
 {
 	if (!fpath) return NULL;
 
@@ -90,37 +92,6 @@ sNDSBannerExt* getRomBannerNDS(char const* fpath)
 				fseek(f, 0, SEEK_SET);
 				fseek(f, h->bannerOffset, SEEK_CUR);
 				fread(b, sizeof(sNDSBannerExt), 1, f);
-			}
-		}
-
-		free(h);
-		fclose(f);		
-	}
-
-	return b;
-}
-
-tNDSBanner* getRomBanner(char const* fpath)
-{
-	if (!fpath) return NULL;
-
-	tDSiHeader* h = getRomHeader(fpath);
-	tNDSBanner* b = NULL;
-
-	if (h)
-	{
-		FILE* f = fopen(fpath, "rb");
-
-		if (f)
-		{
-			b = (tNDSBanner*)malloc(sizeof(tNDSBanner));
-
-			if (b)
-			{
-				fseek(f, 0, SEEK_SET);
-
-				fseek(f, h->ndshdr.bannerOffset, SEEK_CUR);
-				fread(b, sizeof(tNDSBanner), 1, f);
 			}
 		}
 
@@ -176,7 +147,7 @@ void printRomInfo(char const* fpath)
 	if (!fpath) return;
 
 	tNDSHeader* h = getRomHeaderNDS(fpath);
-	sNDSBannerExt* b = getRomBannerNDS(fpath);
+	sNDSBannerExt* b = getRomBanner(fpath);
 
 		if (!b)
 		{

@@ -61,8 +61,7 @@ typedef enum {
 
 tDSiHeader* getRomHeader(char const* fpath);
 tNDSHeader* getRomHeaderNDS(char const* fpath);
-tNDSBanner* getRomBanner(char const* fpath);
-sNDSBannerExt* getRomBannerNDS(char const* fpath);
+sNDSBannerExt* getRomBanner(char const* fpath);
 
 bool getGameTitle(sNDSBannerExt* b, char* out, bool full);
 

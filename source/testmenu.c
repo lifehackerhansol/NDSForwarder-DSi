@@ -17,6 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+
+#include <nds.h>
+
 #include "main.h"
 #include "message.h"
 #include "storage.h"

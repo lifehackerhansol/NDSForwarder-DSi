@@ -21,7 +21,6 @@
 #define SAV_H
 
 #include <nds/ndstypes.h>
-#include <stdio.h>
 //http://elm-chan.org/docs/fat_e.html
 
 #pragma pack(push, 1)

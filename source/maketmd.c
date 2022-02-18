@@ -33,13 +33,15 @@ distribution.
 	Original: github.com/Tuxality/maketmd
 */
 
-#include "maketmd.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <nds/sha1.h>
-#include <nds/ndstypes.h>
 #include <machine/endian.h>
+
+#include <nds.h>
+
+#include "main.h"
+#include "storage.h"
 
 //#define TMD_CREATOR_VER  "0.2"
 

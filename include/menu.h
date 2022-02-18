@@ -20,8 +20,6 @@
 #ifndef MENU_H
 #define MENU_H
 
-#include <nds/ndstypes.h>
-
 #define ITEMS_PER_PAGE 20
 
 typedef struct {

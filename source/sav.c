@@ -17,9 +17,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "sav.h"
+#include <stdio.h>
 #include <string.h>
 #include <malloc.h>
+
+#include "sav.h"
 
 static u32 _getClusterSize(u32 sizebytes)
 {

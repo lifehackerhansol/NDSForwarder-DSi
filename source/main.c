@@ -17,11 +17,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+#include <time.h>
+
+#include <nds.h>
+#include <fat.h>
+
 #include "main.h"
 #include "menu.h"
 #include "message.h"
 #include "nitrofs.h"
-#include <time.h>
 
 #define VERSION "0.2.1"
 

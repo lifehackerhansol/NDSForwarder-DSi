@@ -17,15 +17,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include "install.h"
+#include <stdio.h>
+#include <errno.h>
+#include <sys/stat.h>
+
+#include <nds.h>
+
 #include "sav.h"
 #include "main.h"
 #include "message.h"
 #include "maketmd.h"
 #include "rom.h"
 #include "storage.h"
-#include <errno.h>
-#include <sys/stat.h>
 
 // hardcode the only two constants. This may be changed one day, will just release a new one at that point anyway
 #define gamepath_location 0x1D6A4
@@ -147,41 +150,45 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	remove(templatePath);
 	copyFile("nitro:/sdcard.nds", templatePath);
 	iprintf("Template copied to SD.\n");
-	FILE* template = fopen("sd:/_nds/template.dsi", "rb+");
 
 	// DSiWare check
 	tDSiHeader* targetDSiWareCheck = getRomHeader(fpath);
-	//title id must be one of these
+	if (targetDSiWareCheck == NULL) return installError("Failed to read template header.\n");
 	if ((targetDSiWareCheck->tid_high & 0xFF) > 0)
 	{
 		bool choice = choicePrint("This is a DSiWare title!\nYou can install directly using\nTMFH instead, for full \ncompatibility.\nInstall anyway?");
 		if(!choice) {
 			free(targetDSiWareCheck);
-			return false;
+			return installError("User cancelled install.\n");
 		}
 	}
-
 	free(targetDSiWareCheck);
 
-	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
-	sNDSBannerExt* targetbanner = getRomBannerNDS(fpath);
 	tDSiHeader* templateheader = getRomHeader(templatePath);
-
-	fseek(template, 0, SEEK_SET);
-	fwrite(targetheader, 1, 18, template);
-	fflush(template);
-	
-	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
+	if(templateheader == NULL) return installError("Failed to read template header.\n");
+	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
+	if(targetheader == NULL) return installError("Failed to read target header.\n");
 
 
-	// sanity check CRC.
-	if(swiCRC16(0xFFFF, &targetheader, 0x15E) != targetheader->headerCRC16) 
-		free(targetbanner);
+	// header operations
+	u16 crcheader = swiCRC16(0xFFFF, &targetheader, 0x15E);
+	iprintf("%d\n%d\n", crcheader, targetheader->headerCRC16);
+	if(crcheader != targetheader->headerCRC16) {
 		free(targetheader);
 		free(templateheader);
-		fclose(template);
 		return installError("Header CRC check failed. This ROM may be corrupt.\n");
 	}
+
+	memcpy(templateheader->ndshdr.gameTitle, targetheader->gameTitle, 12);
+	memcpy(templateheader->ndshdr.gameCode, targetheader->gameCode, 4);
+	templateheader->tid_low = __builtin_bswap32(*(u32*)targetheader->gameCode);
+	templateheader->ndshdr.headerCRC16 = swiCRC16(0xFFFF, &templateheader->ndshdr, 0x15E);
+	free(targetheader);
+
+	// banner operations
+	sNDSBannerExt* targetbanner = getRomBanner(fpath);
+	if(targetbanner == NULL) return installError("Failed to read target banner.\n");
+
 	// Only check up to ZH_KO. DSi is checked separately, and can be fixed by nulling the DSi data, but the rest needs to be intact.
 	bool crccheck = true;
 	switch(targetbanner->version) {
@@ -197,9 +204,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	}
 	if (!crccheck) {
 		free(targetbanner);
-		free(targetheader);
 		free(templateheader);
-		fclose(template);
 		return installError("Icon/Title CRC check failed. This ROM may be corrupt.\n");
 	}
 
@@ -224,33 +229,31 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
 			break;
 	}
+
+
+	// actually writing stuff now
+	// write header
+	FILE* template = fopen("sd:/_nds/template.dsi", "rb+");
+	fseek(template, 0, SEEK_SET);
+	fwrite(templateheader, 1, 18, template);
+	fflush(template);
+	free(templateheader);
+
+	// write banner
+	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
 	fwrite(targetbanner, sizeof(sNDSBannerExt), 1, template);
 	fflush(template);
 	free(targetbanner);
-
+	free(templateheader);
+	
+	// write game path
 	fseek(template, gamepath_location, SEEK_SET);
 	fwrite(fpath, sizeof(char), gamepath_length, template);
 	fflush(template);
 
-	u32 targettid = __builtin_bswap32(*(u32*)targetheader->gameCode);
-	fseek(template, offsetof(tDSiHeader, tid_low), SEEK_SET);
-	fwrite(&targettid, sizeof(targettid), 1, template);
-	fflush(template);
-
-	// need to reload header to calc crc16
-	free(templateheader);
-	templateheader = getRomHeader(templatePath);
-	u16 templatecrc = swiCRC16(0xFFFF, &templateheader->ndshdr, 0x15E);
-	fseek(template, offsetof(tNDSHeader, headerCRC16), SEEK_SET);
-	fwrite(&templatecrc, sizeof(templatecrc), 1, template);
-
-	// need to reload banner to calc crc16
+	// complete
 	fclose(template);
 	iprintf("Forwarder created.\n\n");
-
-	// no leeks
-	free(targetheader);
-	free(templateheader);
 	return true;
 }
 
@@ -276,7 +279,7 @@ bool install(char* fpath, bool randomize)
 	iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
 
 	if (!_generateForwarder(fpath, templatePath)) {
-		return installError("Failed to generate forwarder.\n");
+		return false;
 	}
 
 	tDSiHeader* h = getRomHeader(templatePath);	

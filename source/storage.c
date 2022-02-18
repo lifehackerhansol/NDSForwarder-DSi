@@ -17,11 +17,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+#include <errno.h>
+#include <dirent.h>
+
+#include <nds.h>
+
 #include "storage.h"
 #include "main.h"
 #include "message.h"
-#include <errno.h>
-#include <dirent.h>
 
 #define TITLE_LIMIT 39
 

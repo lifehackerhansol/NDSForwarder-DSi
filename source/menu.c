@@ -17,6 +17,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+
+#include <nds.h>
+#include <fat.h>
 #include "menu.h"
 #include "main.h"
 

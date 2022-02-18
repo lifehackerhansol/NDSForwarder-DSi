@@ -17,13 +17,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdio.h>
+#include <dirent.h>
+
+#include <nds.h>
+
 #include "main.h"
 #include "rom.h"
 #include "install.h"
 #include "menu.h"
 #include "storage.h"
 #include "message.h"
-#include <dirent.h>
 
 enum {
 	INSTALL_MENU_INSTALL,
