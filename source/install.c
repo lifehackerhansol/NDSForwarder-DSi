@@ -171,9 +171,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 
 	// header operations
-	u16 crcheader = swiCRC16(0xFFFF, &targetheader, 0x15E);
-	iprintf("%d\n%d\n", crcheader, targetheader->headerCRC16);
-	if(crcheader != targetheader->headerCRC16) {
+	if(swiCRC16(0xFFFF, targetheader, 0x15E) != targetheader->headerCRC16) {
 		free(targetheader);
 		free(templateheader);
 		return installError("Header CRC check failed. This ROM may be corrupt.\n");
@@ -181,7 +179,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 	memcpy(templateheader->ndshdr.gameTitle, targetheader->gameTitle, 12);
 	memcpy(templateheader->ndshdr.gameCode, targetheader->gameCode, 4);
-	templateheader->tid_low = __builtin_bswap32(*(u32*)targetheader->gameCode);
+	templateheader->tid_low = __builtin_bswap32((*(u32*)targetheader->gameCode));
 	templateheader->ndshdr.headerCRC16 = swiCRC16(0xFFFF, &templateheader->ndshdr, 0x15E);
 	free(targetheader);
 
@@ -235,9 +233,8 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	// write header
 	FILE* template = fopen("sd:/_nds/template.dsi", "rb+");
 	fseek(template, 0, SEEK_SET);
-	fwrite(templateheader, 1, 18, template);
+	fwrite(templateheader, 1, sizeof(tDSiHeader), template);
 	fflush(template);
-	free(templateheader);
 
 	// write banner
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
@@ -458,6 +455,6 @@ bool install(char* fpath, bool randomize)
 		keyWait(KEY_A | KEY_B);
 	}
 	free(h);
-	remove(templatePath);
+	// remove(templatePath);
 	return true;
 }
