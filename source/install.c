@@ -173,7 +173,15 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	
 	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
 
+
 	// sanity check CRC.
+	if(swiCRC16(0xFFFF, &targetheader, 0x15E) != targetheader->headerCRC16) 
+		free(targetbanner);
+		free(targetheader);
+		free(templateheader);
+		fclose(template);
+		return installError("Header CRC check failed. This ROM may be corrupt.\n");
+	}
 	// Only check up to ZH_KO. DSi is checked separately, and can be fixed by nulling the DSi data, but the rest needs to be intact.
 	bool crccheck = true;
 	switch(targetbanner->version) {
@@ -192,7 +200,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 		free(targetheader);
 		free(templateheader);
 		fclose(template);
-		return installError("CRC check failed. This ROM may be corrupt.\n");
+		return installError("Icon/Title CRC check failed. This ROM may be corrupt.\n");
 	}
 
 	switch(targetbanner->version) {
