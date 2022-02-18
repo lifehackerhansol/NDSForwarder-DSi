@@ -152,8 +152,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	// DSiWare check
 	tDSiHeader* targetDSiWareCheck = getRomHeader(fpath);
 	//title id must be one of these
-	if (targetDSiWareCheck->tid_high == 0x00030004 || targetDSiWareCheck->tid_high == 0x00030005 ||
-		targetDSiWareCheck->tid_high == 0x00030015 || targetDSiWareCheck->tid_high == 0x00030017)
+	if ((targetDSiWareCheck->tid_high & 0xFF) > 0)
 	{
 		bool choice = choicePrint("This is a DSiWare title!\nYou can install directly using\nTMFH instead, for full \ncompatibility.\nInstall anyway?");
 		if(!choice) {
@@ -179,20 +178,14 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	bool crccheck = true;
 	switch(targetbanner->version) {
 		case NDS_BANNER_VER_ORIGINAL:
-			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x820) != targetbanner->crc[0]) {
-				crccheck = false;
-				break;
-			}
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x820) != targetbanner->crc[0]) crccheck = false;
+			break;
 		case NDS_BANNER_VER_ZH:
-			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x920) != targetbanner->crc[1]) {
-				crccheck = false;
-				break;
-			}
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x920) != targetbanner->crc[1]) crccheck = false;
+			break;
 		case NDS_BANNER_VER_ZH_KO:
-			if(swiCRC16(0xFFFF, &targetbanner->icon, 0xA20) != targetbanner->crc[2]) {
-				crccheck = false;
-				break;
-			}
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0xA20) != targetbanner->crc[2]) crccheck = false;
+			break;
 	}
 	if (!crccheck) {
 		free(targetbanner);
@@ -205,12 +198,11 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	switch(targetbanner->version) {
 		case NDS_BANNER_VER_ORIGINAL:
 			memcpy(targetbanner->titles[6], targetbanner->titles[1], 0x100);
-			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
 		case NDS_BANNER_VER_ZH:
 			memcpy(targetbanner->titles[7], targetbanner->titles[1], 0x100);
-			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 		default:
-			if(!(targetbanner->version == NDS_BANNER_VER_DSi) || !(swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180) == targetbanner->crc[3])) {
+			u16 crcDSi = swiCRC16(0xFFFF, &targetbanner->dsi_icon, 0x1180);
+			if(targetbanner->version != NDS_BANNER_VER_DSi || crcDSi != targetbanner->crc[3]) {
 				memset(targetbanner->reserved2, 0xFF, sizeof(targetbanner->reserved2));
 				memset(targetbanner->dsi_icon, 0xFF, sizeof(targetbanner->dsi_icon));
 				memset(targetbanner->dsi_palette, 0xFF, sizeof(targetbanner->dsi_palette));
@@ -218,7 +210,9 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 				memset(targetbanner->reserved3, 0xFF, sizeof(targetbanner->reserved3));
 				targetbanner->crc[3] = 0x0000;
 				targetbanner->version = NDS_BANNER_VER_ZH_KO;
-			} else targetbanner->crc[3] = crccheck;
+			} else targetbanner->crc[3] = crcDSi;
+			targetbanner->crc[0] = swiCRC16(0xFFFF, &targetbanner->icon, 0x820);
+			targetbanner->crc[1] = swiCRC16(0xFFFF, &targetbanner->icon, 0x920);
 			targetbanner->crc[2] = swiCRC16(0xFFFF, &targetbanner->icon, 0xA20);
 			break;
 	}
