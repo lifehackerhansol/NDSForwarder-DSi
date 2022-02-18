@@ -1,4 +1,0 @@
-name=DSi SD Card
-gamepath_location=0x229BC
-gamepath_length=252
-banner_location=0x30200
