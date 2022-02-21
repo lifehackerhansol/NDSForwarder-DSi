@@ -190,14 +190,14 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	// Only check up to ZH_KO. DSi is checked separately, and can be fixed by nulling the DSi data, but the rest needs to be intact.
 	bool crccheck = true;
 	switch(targetbanner->version) {
-		case NDS_BANNER_VER_ORIGINAL:
-			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x820) != targetbanner->crc[0]) crccheck = false;
+		case NDS_BANNER_VER_ZH_KO:
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0xA20) != targetbanner->crc[2]) crccheck = false;
 			break;
 		case NDS_BANNER_VER_ZH:
 			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x920) != targetbanner->crc[1]) crccheck = false;
 			break;
-		case NDS_BANNER_VER_ZH_KO:
-			if(swiCRC16(0xFFFF, &targetbanner->icon, 0xA20) != targetbanner->crc[2]) crccheck = false;
+		case NDS_BANNER_VER_ORIGINAL:
+			if(swiCRC16(0xFFFF, &targetbanner->icon, 0x820) != targetbanner->crc[0]) crccheck = false;
 			break;
 	}
 	if (!crccheck) {
