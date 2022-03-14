@@ -128,21 +128,13 @@ export INCLUDE  := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir))\
 									 -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-ifeq ($(strip $(ICON)),)
-	icons := $(wildcard *.bmp)
+icons := $(wildcard *.bmp)
 
-	ifneq (,$(findstring $(TARGET).bmp,$(icons)))
-		export GAME_ICON := $(CURDIR)/$(TARGET).bmp
-	else
-		ifneq (,$(findstring icon.bmp,$(icons)))
-			export GAME_ICON := $(CURDIR)/icon.bmp
-		endif
-	endif
+ifneq (,$(findstring $(TARGET).bmp,$(icons)))
+	export GAME_ICON := $(CURDIR)/$(TARGET).bmp
 else
-	ifeq ($(suffix $(ICON)), .grf)
-		export GAME_ICON := $(CURDIR)/$(ICON)
-	else
-		export GAME_ICON := $(CURDIR)/$(BUILD)/$(notdir $(basename $(ICON))).grf
+	ifneq (,$(findstring icon.bmp,$(icons)))
+		export GAME_ICON := $(CURDIR)/icon.bmp
 	endif
 endif
 
