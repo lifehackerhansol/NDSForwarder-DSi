@@ -31,7 +31,7 @@ INCLUDES := include
 DATA     := data
 GRAPHICS :=
 AUDIO    :=
-ICON     := icon.bmp
+ICON     :=
 
 # specify a directory which contains the nitro filesystem
 # this is relative to the Makefile
@@ -128,13 +128,21 @@ export INCLUDE  := $(foreach dir,$(INCLUDES),-iquote $(CURDIR)/$(dir))\
 									 -I$(CURDIR)/$(BUILD)
 export LIBPATHS := $(foreach dir,$(LIBDIRS),-L$(dir)/lib)
 
-icons := $(wildcard *.bmp)
+ifeq ($(strip $(ICON)),)
+	icons := $(wildcard *.bmp)
 
-ifneq (,$(findstring $(TARGET).bmp,$(icons)))
-	export GAME_ICON := $(CURDIR)/$(TARGET).bmp
+	ifneq (,$(findstring $(TARGET).bmp,$(icons)))
+		export GAME_ICON := $(CURDIR)/$(TARGET).bmp
+	else
+		ifneq (,$(findstring icon.bmp,$(icons)))
+			export GAME_ICON := $(CURDIR)/icon.bmp
+		endif
+	endif
 else
-	ifneq (,$(findstring icon.bmp,$(icons)))
-		export GAME_ICON := $(CURDIR)/icon.bmp
+	ifeq ($(suffix $(ICON)), .grf)
+		export GAME_ICON := $(CURDIR)/$(ICON)
+	else
+		export GAME_ICON := $(CURDIR)/$(BUILD)/$(notdir $(basename $(ICON))).grf
 	endif
 endif
 
