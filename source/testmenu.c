@@ -29,7 +29,7 @@ void testMenu()
 {
 	//top screen
 	clearScreen(&topScreen);
-	iprintf("Storage Check Test\n\n");
+	printf("Storage Check Test\n\n");
 
 	//bottom screen
 	clearScreen(&bottomScreen);
@@ -40,31 +40,31 @@ void testMenu()
 
 	//home menu slots
 	if (isDSiMode() && sdFound) {
-		iprintf("Free Home Menu Slots:\n");
+		printf("Free Home Menu Slots:\n");
 		swiWaitForVBlank();
 
 		free = getMenuSlotsFree();
-		iprintf("\t%d / ", free);
+		printf("\t%d / ", free);
 		swiWaitForVBlank();
 
 		size = getMenuSlots();
-		iprintf("%d\n", size);
+		printf("%d\n", size);
 		swiWaitForVBlank();
 	}
 
 	//SD Card
 	{
-		iprintf("\nFree SD Space:\n\t");
+		printf("\nFree SD Space:\n\t");
 		swiWaitForVBlank();
 
 		unsigned long long sdfree = getSDCardFree();
 		printBytes(sdfree);
-		iprintf(" / ");
+		printf(" / ");
 		swiWaitForVBlank();
 
 		unsigned long long sdsize = getSDCardSize();
 		printBytes(sdsize);	
-		iprintf("\n");
+		printf("\n");
 		swiWaitForVBlank();
 
 		printf("\t%d / %d blocks\n", (unsigned int)(sdfree / BYTES_PER_BLOCK), (unsigned int)(sdsize / BYTES_PER_BLOCK));
@@ -72,23 +72,23 @@ void testMenu()
 
 	//Emunand
 	if (isDSiMode() && sdFound) {
-		iprintf("\nFree DSi Space:\n\t");
+		printf("\nFree DSi Space:\n\t");
 		swiWaitForVBlank();
 
 		free = getDsiFree();
 		printBytes(free);
-		iprintf(" / ");
+		printf(" / ");
 		swiWaitForVBlank();
 
 		size = getDsiSize();
 		printBytes(size);
-		iprintf("\n");
+		printf("\n");
 		swiWaitForVBlank();
 
 		printf("\t%.0f / %.0f blocks\n", (float)free / BYTES_PER_BLOCK, (float)size / BYTES_PER_BLOCK);
 	}
 
 	//end
-	iprintf("\nBack - [B]\n");
+	printf("\nBack - [B]\n");
 	keyWait(KEY_B);
 }

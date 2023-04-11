@@ -139,13 +139,13 @@ void tmd_create(uint8_t* tmd, FILE* app)
 
 int maketmd(char* input, char* tmdPath)
 {
-	iprintf("MakeTMD for DSiWare Homebrew\n");
-	iprintf("by Przemyslaw Skryjomski\n\t(Tuxality)\n");
+	printf("MakeTMD for DSiWare Homebrew\n");
+	printf("by Przemyslaw Skryjomski\n\t(Tuxality)\n");
 
 	if(input == NULL || tmdPath == NULL) {
-		iprintf("\x1B[33m");	//yellow
-		iprintf("\nUsage: %s file.app <file.tmd>\n", "maketmd");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[33m");	//yellow
+		printf("\nUsage: %s file.app <file.tmd>\n", "maketmd");
+		printf("\x1B[47m");	//white
 		return 1;
 	}
 
@@ -153,9 +153,9 @@ int maketmd(char* input, char* tmdPath)
 	FILE* app = fopen(input, "rb");
 
 	if(!app) {
-		iprintf("\x1B[31m");	//red
-		iprintf("Error at opening %s for reading.\n", input);
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("Error at opening %s for reading.\n", input);
+		printf("\x1B[47m");	//white
 		return 1;
 	}
 
@@ -165,9 +165,9 @@ int maketmd(char* input, char* tmdPath)
 	if (!tmd)
 	{
 		fclose(app);
-		iprintf("\x1B[31m");	//white
-		iprintf("Error at opening %s for writing.\n", tmdPath);
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//white
+		printf("Error at opening %s for writing.\n", tmdPath);
+		printf("\x1B[47m");	//white
 		return 1;
 	}
 

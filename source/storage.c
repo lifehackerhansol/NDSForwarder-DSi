@@ -19,9 +19,10 @@
 
 #include <stdio.h>
 #include <errno.h>
-#include <dirent.h>
 
 #include <nds.h>
+#include <sys/dir.h>
+#include <sys/statvfs.h>
 
 #include "storage.h"
 #include "main.h"
@@ -33,7 +34,7 @@
 void printBytes(unsigned long long bytes)
 {
 	if (bytes < 1024)
-		iprintf("%dB", (unsigned int)bytes);
+		printf("%dB", (unsigned int)bytes);
 
 	else if (bytes < 1024 * 1024)
 		printf("%.2fKB", (float)bytes / 1024.f);
@@ -60,25 +61,25 @@ void printProgressBar(float percent)
 	{
 		consoleSelect(&topScreen);
 
-		iprintf("\x1B[42m");	//green
+		printf("\x1B[42m");	//green
 
 		//Print frame
 		if (lastBars <= 0)
 		{
-			iprintf("\x1b[23;0H[");
-			iprintf("\x1b[23;31H]");
+			printf("\x1b[23;0H[");
+			printf("\x1b[23;31H]");
 		}
 
 		//Print bars
 		if (bars > 0)
 		{			
 			for (int i = 0; i < bars; i++)
-				iprintf("\x1b[23;%dH|", 1 + i);			
+				printf("\x1b[23;%dH|", 1 + i);			
 		}
 
 		lastBars = bars;
 
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[47m");	//white
 	}	
 }
 
@@ -86,7 +87,7 @@ void clearProgressBar()
 {
 	lastBars = 0;
 	consoleSelect(&topScreen);
-	iprintf("\x1b[23;0H                                ");
+	printf("\x1b[23;0H                                ");
 }
 
 //files
@@ -272,19 +273,19 @@ bool deleteDir(char const* path)
 				char fpath[512];
 				sprintf(fpath, "%s/%s", path, ent->d_name);
 
-				iprintf("%s...", fpath);
+				printf("%s...", fpath);
 				if (remove(fpath) != 0)
 				{
-					iprintf("\x1B[31m");
-					iprintf("Fail\n");
-					iprintf("\x1B[47m");
+					printf("\x1B[31m");
+					printf("Fail\n");
+					printf("\x1B[47m");
 					result = false;
 				}
 				else
 				{
-					iprintf("\x1B[42m");
-					iprintf("Done\n");
-					iprintf("\x1B[47m");
+					printf("\x1B[42m");
+					printf("Done\n");
+					printf("\x1B[47m");
 				}
 			}
 		}
@@ -292,19 +293,19 @@ bool deleteDir(char const* path)
 
 	closedir(dir);
 
-	iprintf("%s...", path);
+	printf("%s...", path);
 	if (remove(path) != 0)
 	{
-		iprintf("\x1B[31m");
-		iprintf("Fail\n");
-		iprintf("\x1B[47m");
+		printf("\x1B[31m");
+		printf("Fail\n");
+		printf("\x1B[47m");
 		result = false;
 	}
 	else
 	{
-		iprintf("\x1B[42m");
-		iprintf("Done\n");
-		iprintf("\x1B[47m");
+		printf("\x1B[42m");
+		printf("Done\n");
+		printf("\x1B[47m");
 	}
 
 	return result;

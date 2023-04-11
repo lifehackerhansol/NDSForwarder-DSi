@@ -61,10 +61,10 @@ void installMenu()
 	{
 		clearScreen(&bottomScreen);
 
-		iprintf("\x1B[31m");	//red
-		iprintf("No files found.\n");
-		iprintf("\x1B[47m");	//white
-		iprintf("\nBack - [B]\n");
+		printf("\x1B[31m");	//red
+		printf("No files found.\n");
+		printf("\x1B[47m");	//white
+		printf("\nBack - [B]\n");
 
 		keyWait(KEY_B | KEY_A | KEY_START);
 	}

@@ -1,4 +1,4 @@
-name: Build nightly
+name: Build release
 
 on:
   release:
@@ -7,18 +7,18 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container: devkitpro/devkitarm
-    name: Build with Docker using devkitARM
+    container: skylyrac/blocksds:slim-latest
+    name: Build with Docker using BlocksDS
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
-      - name: Make NDSForwarder
+      - name: Make application
         run: |
-          make
+          make VERBOSE=1
       - name: Prepare for build publishing
         run: |
           mkdir -p ~/artifacts
-          cp -f NDSForwarder.* ~/artifacts/
+          cp -f *.dsi ~/artifacts/
       - name: Publish build to GH Actions
         uses: actions/upload-artifact@v2
         with:

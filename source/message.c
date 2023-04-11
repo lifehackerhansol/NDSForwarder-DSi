@@ -42,10 +42,10 @@ bool choiceBox(char* message)
 
 	clearScreen(&bottomScreen);
 
-	iprintf("\x1B[33m");	//yellow
-	iprintf("%s\n", message);
-	iprintf("\x1B[47m");	//white
-	iprintf("\x1b[%d;0H\tYes\n\tNo\n", choiceRow);
+	printf("\x1B[33m");	//yellow
+	printf("%s\n", message);
+	printf("\x1B[47m");	//white
+	printf("\x1b[%d;0H\tYes\n\tNo\n", choiceRow);
 
 	while (1)
 	{
@@ -53,13 +53,13 @@ bool choiceBox(char* message)
 		scanKeys();
 
 		//Clear cursor
-		iprintf("\x1b[%d;0H ", choiceRow + cursor);
+		printf("\x1b[%d;0H ", choiceRow + cursor);
 
 		if (keysDown() & (KEY_UP | KEY_DOWN))
 			cursor = !cursor;
 
 		//Print cursor
-		iprintf("\x1b[%d;0H>", choiceRow + cursor);
+		printf("\x1b[%d;0H>", choiceRow + cursor);
 
 		if (keysDown() & (KEY_A | KEY_START))
 			break;
@@ -79,10 +79,10 @@ bool choicePrint(char* message)
 {
 	bool choice = NO;
 
-	iprintf("\x1B[33m");	//yellow
-	iprintf("\n%s\n", message);
-	iprintf("\x1B[47m");	//white
-	iprintf("Yes - [A]\nNo  - [B]\n");
+	printf("\x1B[33m");	//yellow
+	printf("\n%s\n", message);
+	printf("\x1B[47m");	//white
+	printf("Yes - [A]\nNo  - [B]\n");
 
 	while (1)
 	{
@@ -114,8 +114,8 @@ void messageBox(char* message)
 
 void messagePrint(char* message)
 {
-	iprintf("%s\n", message);
-	iprintf("\nOkay - [A]\n");
+	printf("%s\n", message);
+	printf("\nOkay - [A]\n");
 
 	while (1)
 	{

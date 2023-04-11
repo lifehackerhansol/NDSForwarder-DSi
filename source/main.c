@@ -21,12 +21,12 @@
 #include <time.h>
 
 #include <nds.h>
-#include <fat.h>
+#include <fatfs.h>
+#include <filesystem.h>
 
 #include "main.h"
 #include "menu.h"
 #include "message.h"
-#include "nitrofs.h"
 
 #define VERSION "0.3.0"
 
@@ -63,11 +63,11 @@ static int _mainMenu(int cursor)
 	//top screen
 	clearScreen(&topScreen);
 
-	iprintf("\tNDSForwarder for hiyaCFW\n   and flashcards\n");
-	iprintf("\nversion %s\n", VERSION);
-	iprintf("\x1b[21;0HJeff - 2018-2019");
-	iprintf("\x1b[22;0Hlifehackerhansol - 2022-2023");
-	iprintf("\x1b[23;0HRocket Robz - 2023");
+	printf("\tNDSForwarder for hiyaCFW\n   and flashcards\n");
+	printf("\nversion %s\n", VERSION);
+	printf("\x1b[21;0HJeff - 2018-2019");
+	printf("\x1b[22;0Hlifehackerhansol - 2022-2023");
+	printf("\x1b[23;0HRocket Robz - 2023");
 
 	//menu
 	Menu* m = newMenu();
@@ -121,15 +121,8 @@ int main(int argc, char **argv)
 		return 0;
 	} */
 
-	//setup sd card access
-	if (!fatInitDefault())
-	{
-		messageBox("fatInitDefault()...\x1B[31mFailed\n\x1B[47m");
-		return 0;
-	}
-
 	// setup NitroFS
-	if(!nitroFSInit(NULL)) if(!nitroFSInit(argv[0])) if(!nitroFSInit("/NDSForwarder.dsi")) if(!nitroFSInit("/NDSForwarder.nds")) {
+	if(!nitroFSInit(NULL)) if(!nitroFSInit("/NDSForwarder.dsi")) if(!nitroFSInit("/NDSForwarder.nds")) {
 		messageBox("nitroFSInit()...\x1B[31mFailed\n\x1B[47m");
 		return 0;
 	}

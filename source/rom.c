@@ -151,7 +151,7 @@ void printRomInfo(char const* fpath)
 
 		if (!b)
 		{
-			iprintf("Could not read banner.\n");
+			printf("Could not read banner.\n");
 		}
 		else
 		{
@@ -160,21 +160,21 @@ void printRomInfo(char const* fpath)
 				char gameTitle[128+1];
 				getGameTitle(b, gameTitle, true);
 
-				iprintf("%s\n\n", gameTitle);
+				printf("%s\n\n", gameTitle);
 			}
 
 			//file size
 			{
-				iprintf("Size: ");
+				printf("Size: ");
 				printBytes(getRomSize(fpath));
-				iprintf("\n");
+				printf("\n");
 			}
 
-			iprintf("Label: %.12s\n", h->gameTitle);
-			iprintf("Game Code: %.4s\n", h->gameCode);
+			printf("Label: %.12s\n", h->gameTitle);
+			printf("Game Code: %.4s\n", h->gameCode);
 
 			//print full file path
-			iprintf("\n%s\n", fpath);
+			printf("\n%s\n", fpath);
 		}
 	
 	free(b);

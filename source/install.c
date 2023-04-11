@@ -51,7 +51,7 @@ static bool _patchGameCode(tDSiHeader* h)
 {
 	if (!h) return false;
 
-	iprintf("Fixing Game Code...");
+	printf("Fixing Game Code...");
 	swiWaitForVBlank();
 
 	//set as standard app
@@ -70,9 +70,9 @@ static bool _patchGameCode(tDSiHeader* h)
 	}
 	while (_titleIsUsed(h));
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Done\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Done\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
@@ -82,13 +82,13 @@ static bool _iqueHack(tDSiHeader* h)
 
 	if (h->ndshdr.reserved1[8] == 0x80)
 	{
-		iprintf("iQue Hack...");	
+		printf("iQue Hack...");	
 		
 		h->ndshdr.reserved1[8] = 0x00;
 
-		iprintf("\x1B[42m");	//green
-		iprintf("Done\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[42m");	//green
+		printf("Done\n");
+		printf("\x1B[47m");	//white
 		return true;
 	}
 
@@ -97,49 +97,49 @@ static bool _iqueHack(tDSiHeader* h)
 
 static bool _checkSdSpace(unsigned long long size)
 {
-	iprintf("Enough room on SD card?...");
+	printf("Enough room on SD card?...");
 	swiWaitForVBlank();
 
 	if (getSDCardFree() < size)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("No\n");
+		printf("\x1B[47m");	//white
 		return false;
 	}
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Yes\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
 static bool _openMenuSlot()
 {
-	iprintf("Open DSi menu slot?...");
+	printf("Open DSi menu slot?...");
 	swiWaitForVBlank();
 
 	if (getMenuSlotsFree() <= 0)
 	{
-		iprintf("\x1B[31m");	//red
-		iprintf("No\n");
-		iprintf("\x1B[47m");	//white
+		printf("\x1B[31m");	//red
+		printf("No\n");
+		printf("\x1B[47m");	//white
 		return choicePrint("Try installing anyway?");
 	}
 
-	iprintf("\x1B[42m");	//green
-	iprintf("Yes\n");
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[42m");	//green
+	printf("Yes\n");
+	printf("\x1B[47m");	//white
 	return true;
 }
 
 bool installError(char* error)
 {
-	iprintf("\x1B[31m");	//red
-	iprintf("Error: ");
-	iprintf("\x1B[33m");	//yellow
-	iprintf("%s", error);
-	iprintf("\x1B[47m");	//white
+	printf("\x1B[31m");	//red
+	printf("Error: ");
+	printf("\x1B[33m");	//yellow
+	printf("%s", error);
+	printf("\x1B[47m");	//white
 	
 	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
 	return false;
@@ -151,7 +151,7 @@ static bool _generateFcForwarder(char* fpath, char* templatePath)
 	mkdir("/_nds", 0777);
 	remove(templatePath);
 	copyFile("nitro:/flashcard.nds", templatePath);
-	iprintf("Template copied to SD.\n");
+	printf("Template copied to SD.\n");
 
 	tDSiHeader* templateheader = getRomHeader(templatePath);
 	if(templateheader == NULL) return installError("Failed to read template header.\n");
@@ -199,7 +199,7 @@ static bool _generateFcForwarder(char* fpath, char* templatePath)
 
 	// complete
 	fclose(template);
-	iprintf("Forwarder created.\n\n");
+	printf("Forwarder created.\n\n");
 	return true;
 }
 
@@ -209,7 +209,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	mkdir("/_nds", 0777);
 	remove(templatePath);
 	copyFile("nitro:/sdcard.nds", templatePath);
-	iprintf("Template copied to SD.\n");
+	printf("Template copied to SD.\n");
 
 	// DSiWare check
 	tDSiHeader* targetDSiWareCheck = getRomHeader(fpath);
@@ -310,7 +310,7 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 
 	// complete
 	fclose(template);
-	iprintf("Forwarder created.\n\n");
+	printf("Forwarder created.\n\n");
 	return true;
 }
 
@@ -345,13 +345,13 @@ bool installFc(char* fpath)
 	else
 	{
 		//get install size
-		iprintf("Install Size: ");
+		printf("Install Size: ");
 		swiWaitForVBlank();
 		
 		unsigned long long fileSize = getRomSize(templatePath);
 
 		printBytes(fileSize);
-		iprintf("\n");
+		printf("\n");
 
 		if (!_checkSdSpace(fileSize)) return installError("Not enough space on SD.\n");
 
@@ -373,16 +373,16 @@ bool installFc(char* fpath)
 
 			else
 			{
-				iprintf("\nDeleting:\n");
+				printf("\nDeleting:\n");
 				deleteDir(newPath);
-				iprintf("\n");
+				printf("\n");
 			}
 		}
 
 		{
 			//create forwarder
 			{
-				iprintf("Creating forwarder...");
+				printf("Creating forwarder...");
 				swiWaitForVBlank();
 
 				//copy nds file to forwarder folder
@@ -396,18 +396,18 @@ bool installFc(char* fpath)
 						return installError(err);
 					}
 
-					iprintf("\x1B[42m");	//green
-					iprintf("Done\n");
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[42m");	//green
+					printf("Done\n");
+					printf("\x1B[47m");	//white
 				}
 			}
 		}
 
 		//end
-		iprintf("\x1B[42m");	//green
-		iprintf("\nInstallation complete.\n");
-		iprintf("\x1B[47m");	//white
-		iprintf("Back - [B]\n");
+		printf("\x1B[42m");	//green
+		printf("\nInstallation complete.\n");
+		printf("\x1B[47m");	//white
+		printf("Back - [B]\n");
 		keyWait(KEY_A | KEY_B);
 	}
 	free(h);
@@ -434,7 +434,7 @@ bool install(char* fpath, bool randomize)
 
 	//start installation
 	clearScreen(&bottomScreen);
-	iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
+	printf("Installing %s\n\n", fpath); swiWaitForVBlank();
 
 	if (!isDSiMode()) {
 		return installFc(fpath);
@@ -466,13 +466,13 @@ bool install(char* fpath, bool randomize)
 			return installError("This is not a DSi ROM.\n");
 
 		//get install size
-		iprintf("Install Size: ");
+		printf("Install Size: ");
 		swiWaitForVBlank();
 		
 		unsigned long long fileSize = getRomSize(templatePath);
 
 		printBytes(fileSize);
-		iprintf("\n");
+		printf("\n");
 
 		if (!_checkSdSpace(fileSize)) return installError("Not enough space on SD.\n");
 
@@ -500,9 +500,9 @@ bool install(char* fpath, bool randomize)
 
 			else
 			{
-				iprintf("\nDeleting:\n");
+				printf("\nDeleting:\n");
 				deleteDir(dirPath);
-				iprintf("\n");
+				printf("\n");
 			}
 		}
 
@@ -520,7 +520,7 @@ bool install(char* fpath, bool randomize)
 
 			//create 00000000.app
 			{
-				iprintf("Creating 00000000.app...");
+				printf("Creating 00000000.app...");
 				swiWaitForVBlank();
 
 				char appPath[80];
@@ -537,29 +537,29 @@ bool install(char* fpath, bool randomize)
 						return installError(err);
 					}
 
-					iprintf("\x1B[42m");	//green
-					iprintf("Done\n");
-					iprintf("\x1B[47m");	//white
+					printf("\x1B[42m");	//green
+					printf("Done\n");
+					printf("\x1B[47m");	//white
 				}
 
 				//pad out banner if it is the last part of the file
 				{
 					if (h->ndshdr.bannerOffset == fileSize - 0x1C00)
 					{
-						iprintf("Padding banner...");
+						printf("Padding banner...");
 						swiWaitForVBlank();
 
 						if (padFile(appPath, 0x7C0) == false)
 						{
-							iprintf("\x1B[31m");	//red
-							iprintf("Failed\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[31m");	//red
+							printf("Failed\n");
+							printf("\x1B[47m");	//white
 						}
 						else
 						{
-							iprintf("\x1B[42m");	//green
-							iprintf("Done\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[42m");	//green
+							printf("Done\n");
+							printf("\x1B[47m");	//white
 						}
 					}
 				}
@@ -568,7 +568,7 @@ bool install(char* fpath, bool randomize)
 				{
 					if (fixHeader)
 					{
-						iprintf("Fixing header...");
+						printf("Fixing header...");
 						swiWaitForVBlank();
 
 						//fix header checksum
@@ -583,18 +583,18 @@ bool install(char* fpath, bool randomize)
 
 						if (!f)
 						{
-							iprintf("\x1B[31m");	//red
-							iprintf("Failed\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[31m");	//red
+							printf("Failed\n");
+							printf("\x1B[47m");	//white
 						}
 						else
 						{
 							fseek(f, 0, SEEK_SET);
 							fwrite(h, sizeof(tDSiHeader), 1, f);
 
-							iprintf("\x1B[42m");	//green
-							iprintf("Done\n");
-							iprintf("\x1B[47m");	//white
+							printf("\x1B[42m");	//green
+							printf("Done\n");
+							printf("\x1B[47m");	//white
 						}
 
 						fclose(f);
@@ -613,10 +613,10 @@ bool install(char* fpath, bool randomize)
 		}
 
 		//end
-		iprintf("\x1B[42m");	//green
-		iprintf("\nInstallation complete.\n");
-		iprintf("\x1B[47m");	//white
-		iprintf("Back - [B]\n");
+		printf("\x1B[42m");	//green
+		printf("\nInstallation complete.\n");
+		printf("\x1B[47m");	//white
+		printf("Back - [B]\n");
 		keyWait(KEY_A | KEY_B);
 	}
 	free(h);
