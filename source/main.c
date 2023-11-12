@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <nds.h>
 #include <fatfs.h>
@@ -127,6 +128,10 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	if ((access("nitro:/sdcard.nds", F_OK) != 0) && (access("nitro:/flashcard.nds", F_OK) != 0)) {
+		messageBox("\x1B[31mError:\x1B[33m Something went wrong with nitroFS.");
+		return 0;
+	}
 	chdir("sd:/");
 
 	//main menu
