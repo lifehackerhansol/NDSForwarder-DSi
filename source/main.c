@@ -127,6 +127,8 @@ int main(int argc, char **argv)
 		return 0;
 	}
 
+	chdir("sd:/");
+
 	//main menu
 	bool programEnd = false;
 	int cursor = 0;
