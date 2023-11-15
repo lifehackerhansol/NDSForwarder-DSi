@@ -36,9 +36,10 @@ void testMenu()
 
 	unsigned int free = 0;
 	unsigned int size = 0;
+	const bool sdFound = (access("sd:/", F_OK) == 0);
 
 	//home menu slots
-	{
+	if (isDSiMode() && sdFound) {
 		iprintf("Free Home Menu Slots:\n");
 		swiWaitForVBlank();
 
@@ -70,7 +71,7 @@ void testMenu()
 	}
 
 	//Emunand
-	{
+	if (isDSiMode() && sdFound) {
 		iprintf("\nFree DSi Space:\n\t");
 		swiWaitForVBlank();
 

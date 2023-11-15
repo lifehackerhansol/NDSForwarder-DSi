@@ -32,7 +32,9 @@
 
 // hardcode the only two constants. This may be changed one day, will just release a new one at that point anyway
 #define gamepath_location 0x1D6A4
+#define gamepath_location_fc 0x19E6D
 #define gamepath_length 252
+#define gamepath_length_fc 251
 
 static bool _titleIsUsed(tDSiHeader* h)
 {
@@ -141,6 +143,64 @@ bool installError(char* error)
 	
 	messagePrint("\x1B[31m\nInstallation failed.\n\x1B[47m");
 	return false;
+}
+
+static bool _generateFcForwarder(char* fpath, char* templatePath)
+{
+	// extract template
+	mkdir("/_nds", 0777);
+	remove(templatePath);
+	copyFile("nitro:/flashcard.nds", templatePath);
+	iprintf("Template copied to SD.\n");
+
+	tDSiHeader* templateheader = getRomHeader(templatePath);
+	if(templateheader == NULL) return installError("Failed to read template header.\n");
+	tNDSHeader* targetheader = getRomHeaderNDS(fpath);
+	if(targetheader == NULL) return installError("Failed to read target header.\n");
+
+
+	// header operations
+	if(swiCRC16(0xFFFF, targetheader, 0x15E) != targetheader->headerCRC16) {
+		free(targetheader);
+		free(templateheader);
+		return installError("Header CRC check failed. This ROM may be corrupt.\n");
+	}
+
+	free(targetheader);
+
+	// banner operations
+	sNDSBannerExt* targetbanner = getRomBanner(fpath);
+	if(targetbanner == NULL) return installError("Failed to read target banner.\n");
+
+	targetbanner->version = NDS_BANNER_VER_ORIGINAL;
+	targetbanner->crc[1] = 0;
+	targetbanner->crc[2] = 0;
+	targetbanner->crc[3] = 0;
+
+
+	// actually writing stuff now
+	// write header
+	FILE* template = fopen("fat:/_nds/template.nds", "rb+");
+	fseek(template, 0, SEEK_SET);
+	fwrite(templateheader, 1, sizeof(tDSiHeader), template);
+	fflush(template);
+
+	// write banner (excluding DSi part)
+	fseek(template, templateheader->ndshdr.bannerOffset, SEEK_SET);
+	fwrite(targetbanner, 0x840, 1, template);
+	fflush(template);
+	free(targetbanner);
+	free(templateheader);
+	
+	// write game path
+	fseek(template, gamepath_location_fc, SEEK_SET);
+	fwrite(fpath, sizeof(char), gamepath_length_fc, template);
+	fflush(template);
+
+	// complete
+	fclose(template);
+	iprintf("Forwarder created.\n\n");
+	return true;
 }
 
 static bool _generateForwarder(char* fpath, char* templatePath)
@@ -254,6 +314,107 @@ static bool _generateForwarder(char* fpath, char* templatePath)
 	return true;
 }
 
+bool installFc(char* fpath)
+{
+	char fname[strlen(fpath)];
+	{
+		const int strLen = strlen(fpath);
+		int fpathpos = strLen;
+		while (fpath[fpathpos] != '/') {
+			fpathpos--;
+		}
+		fpathpos++;
+		for (int i = 0; i < strLen; i++) {
+			fname[i] = fpath[fpathpos];
+			if (fpath[fpathpos] == 0) break;
+			fpathpos++;
+		}
+	}
+
+	char* templatePath = "fat:/_nds/template.nds";
+
+	if (!_generateFcForwarder(fpath, templatePath)) {
+		return false;
+	}
+
+	tDSiHeader* h = getRomHeader(templatePath);	
+	if (!h)
+	{
+		return installError("Could not open file.\n");
+	}
+	else
+	{
+		//get install size
+		iprintf("Install Size: ");
+		swiWaitForVBlank();
+		
+		unsigned long long fileSize = getRomSize(templatePath);
+
+		printBytes(fileSize);
+		iprintf("\n");
+
+		if (!_checkSdSpace(fileSize)) return installError("Not enough space on SD.\n");
+
+		//system title patch
+
+		//create forwarder directory /forwarders
+		mkdir("/forwarders", 0777);
+
+		char newPath[12+strlen(fname)+1];
+		sprintf(newPath, "/forwarders/%s", fname);	
+
+		//check if forwarder exists
+		if (access(newPath, F_OK) == 0)
+		{
+			char msg[40];
+			sprintf(msg, "Forwarder already exists.\nReplace it?");
+
+			if (choicePrint(msg) == NO) return installError("User cancelled install.\n");
+
+			else
+			{
+				iprintf("\nDeleting:\n");
+				deleteDir(newPath);
+				iprintf("\n");
+			}
+		}
+
+		{
+			//create forwarder
+			{
+				iprintf("Creating forwarder...");
+				swiWaitForVBlank();
+
+				//copy nds file to forwarder folder
+				{
+					int result = copyFile(templatePath, newPath);
+
+					if (result != 0)
+					{
+						char err[256];
+						sprintf(err, "%s\n%s\n", newPath, strerror(errno));
+						return installError(err);
+					}
+
+					iprintf("\x1B[42m");	//green
+					iprintf("Done\n");
+					iprintf("\x1B[47m");	//white
+				}
+			}
+		}
+
+		//end
+		iprintf("\x1B[42m");	//green
+		iprintf("\nInstallation complete.\n");
+		iprintf("\x1B[47m");	//white
+		iprintf("Back - [B]\n");
+		keyWait(KEY_A | KEY_B);
+	}
+	free(h);
+	// remove(templatePath);
+	return true;
+}
+
 bool install(char* fpath, bool randomize)
 {
 	char* templatePath = "sd:/_nds/template.dsi";
@@ -274,6 +435,10 @@ bool install(char* fpath, bool randomize)
 	//start installation
 	clearScreen(&bottomScreen);
 	iprintf("Installing %s\n\n", fpath); swiWaitForVBlank();
+
+	if (!isDSiMode()) {
+		return installFc(fpath);
+	}
 
 	if (!_generateForwarder(fpath, templatePath)) {
 		return false;

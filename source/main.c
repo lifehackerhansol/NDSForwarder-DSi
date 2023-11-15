@@ -63,10 +63,11 @@ static int _mainMenu(int cursor)
 	//top screen
 	clearScreen(&topScreen);
 
-	iprintf("\tNDSForwarder for HiyaCFW\n");
+	iprintf("\tNDSForwarder for HiyaCFW\n   and flashcards\n");
 	iprintf("\nversion %s\n", VERSION);
-	iprintf("\x1b[22;0HJeff - 2018-2019");
-	iprintf("\x1b[23;0Hlifehackerhansol - 2022");
+	iprintf("\x1b[21;0HJeff - 2018-2019");
+	iprintf("\x1b[22;0Hlifehackerhansol - 2022-2023");
+	iprintf("\x1b[23;0HRocket Robz - 2023");
 
 	//menu
 	Menu* m = newMenu();
@@ -99,26 +100,26 @@ static int _mainMenu(int cursor)
 	return result;
 }
 
-bool isRetailDSi(void) {
+/* bool isRetailDSi(void) {
 	if (REG_SCFG_EXT != 0) {
 		*(vu32*)(0x0DFFFE0C) = 0x53524C41;		// Check for 32MB of RAM
 		bool isDevConsole = (*(vu32*)(0x0DFFFE0C) == 0x53524C41);
 		if (!isDevConsole) return true;
 	}
 	return false;
-}
+} */
 
 int main(int argc, char **argv)
 {
 	srand(time(0));
 	_setupScreens();
 
-	//DSi check
-	if (!isDSiMode() || !isRetailDSi())
+	//DSi check (No longer needed)
+	/* if (!isDSiMode() || !isRetailDSi())
 	{
 		messageBox("\x1B[31mError:\x1B[33m This app is only for retail DSi.");
 		return 0;
-	}
+	} */
 
 	//setup sd card access
 	if (!fatInitDefault())
@@ -128,7 +129,7 @@ int main(int argc, char **argv)
 	}
 
 	// setup NitroFS
-	if(!nitroFSInit(NULL)) if(!nitroFSInit(argv[0])) if(!nitroFSInit("/NDSForwarder.dsi")) {
+	if(!nitroFSInit(NULL)) if(!nitroFSInit(argv[0])) if(!nitroFSInit("/NDSForwarder.dsi")) if(!nitroFSInit("/NDSForwarder.nds")) {
 		messageBox("nitroFSInit()...\x1B[31mFailed\n\x1B[47m");
 		return 0;
 	}

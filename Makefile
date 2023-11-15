@@ -8,7 +8,7 @@ endif
 
 # These set the information text in the nds file
 GAME_TITLE     := NDSForwarder-DSi
-GAME_SUBTITLE1 := Forwarder Generator for hiyaCFW
+GAME_SUBTITLE1 := Forwarder Generator
 GAME_SUBTITLE2 := JeffRuLz & lifehackerhansol
 
 include $(DEVKITARM)/ds_rules
@@ -148,6 +148,8 @@ endif
 
 .PHONY: $(BUILD) clean
 
+all: clean $(BUILD) $(OUTPUT).nds $(OUTPUT).dsi
+
 #---------------------------------------------------------------------------------
 $(BUILD):
 	@mkdir -p $@
@@ -166,6 +168,10 @@ else
 #---------------------------------------------------------------------------------
 $(OUTPUT).dsi: $(OUTPUT).nds
 	mv $< $@
+	ndstool -x $(OUTPUT).dsi -7 arm7.bin -9 arm9.bin -t banner.bin
+	ndstool	-c $(OUTPUT).nds -7 arm7.bin -9 arm9.bin -r7 0x02380000 \
+			-h 0x200 -t banner.bin -d $(NITRO_FILES)
+
 $(OUTPUT).nds: $(OUTPUT).elf $(NITRO_FILES) $(GAME_ICON)
 
 $(OUTPUT).elf: $(OFILES)
