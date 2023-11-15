@@ -63,7 +63,7 @@ static int _mainMenu(int cursor)
 	//top screen
 	clearScreen(&topScreen);
 
-	iprintf("\tNDSForwarder for HiyaCFW\n   and flashcards\n");
+	iprintf("\tNDSForwarder for hiyaCFW\n   and flashcards\n");
 	iprintf("\nversion %s\n", VERSION);
 	iprintf("\x1b[21;0HJeff - 2018-2019");
 	iprintf("\x1b[22;0Hlifehackerhansol - 2022-2023");
