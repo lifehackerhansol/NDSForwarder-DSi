@@ -32,7 +32,7 @@
 
 // hardcode the only two constants. This may be changed one day, will just release a new one at that point anyway
 #define gamepath_location 0x1D6A4
-#define gamepath_location_fc 0x19E6D
+#define gamepath_location_fc 0x1972D
 #define gamepath_length 252
 #define gamepath_length_fc 251
 
